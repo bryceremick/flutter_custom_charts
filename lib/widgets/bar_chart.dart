@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
-import 'package:three_dimensional_bar_chart/widgets/bars/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 
 class BarChart<T extends Bar> extends StatefulWidget {
   const BarChart({
@@ -35,10 +36,10 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
               final x = details.localPosition.dx;
               final y = details.localPosition.dy;
 
-              if (x >= widget.controller.bars[i].xMin &&
-                  x <= widget.controller.bars[i].xMax &&
-                  y >= widget.controller.bars[i].yMin &&
-                  y <= widget.controller.bars[i].yMax) {
+              if (x >= widget.controller.bars[i].constraints.xMin &&
+                  x <= widget.controller.bars[i].constraints.xMax &&
+                  y >= widget.controller.bars[i].constraints.yMin &&
+                  y <= widget.controller.bars[i].constraints.yMax) {
                 widget.onTap!.call(i, widget.controller.bars[i]);
                 break;
               }
@@ -102,19 +103,37 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
         break;
       }
 
-      print('$yMin, ${size.height}');
-
-      controller.bars[i].setBounds(
-        index: i,
-        xMin: dx,
-        xMax: xMax,
-        yMin: yMin,
-        yMax: size.height,
+      // controller.bars[i].setBounds(
+      //   index: i,
+      //   xMin: dx,
+      //   xMax: xMax,
+      //   yMin: yMin,
+      //   yMax: size.height,
+      // );
+      controller.bars[i].paint(
+        canvas,
+        area: ConstrainedArea(
+          xMin: dx,
+          xMax: xMax,
+          yMin: yMin,
+          yMax: size.height,
+        ),
       );
-      controller.bars[i].draw(canvas);
 
       // next cube starting x position
       dx += barWidth + controller.gap;
+    }
+
+    if (controller.lines.isNotEmpty) {
+      for (final line in controller.lines) {
+        line.draw(
+          canvas,
+          xMin: 0,
+          xMax: size.width,
+          yMin: 0,
+          yMax: size.height,
+        );
+      }
     }
   }
 

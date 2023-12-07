@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:three_dimensional_bar_chart/widgets/bars/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 
 class Cube extends Bar {
   Cube({
@@ -12,7 +14,9 @@ class Cube extends Bar {
     this.secondaryFill,
     this.tertiaryFill,
     this.icon,
-  }) : super();
+    super.lines,
+    super.constraints,
+  });
 
   double thirdDimensionX;
   double thirdDimensionY;
@@ -31,6 +35,8 @@ class Cube extends Bar {
     IconData? icon,
     Color? secondaryFill,
     Color? tertiaryFill,
+    List<Line>? lines,
+    ConstrainedArea? constraints,
   }) =>
       Cube(
         width: width ?? this.width,
@@ -42,18 +48,19 @@ class Cube extends Bar {
         icon: icon ?? this.icon,
         secondaryFill: secondaryFill ?? this.secondaryFill,
         tertiaryFill: tertiaryFill ?? this.tertiaryFill,
-      )..setBounds(
-          index: index,
-          xMin: xMin,
-          xMax: xMax,
-          yMin: yMin,
-          yMax: yMax,
-        );
+        lines: lines ?? this.lines,
+        constraints: constraints ?? this.constraints,
+      );
 
   @override
-  void draw(Canvas canvas) {
-    final size = Size(xMax - xMin, yMax - yMin);
-    final yMinOffset = yMin + thirdDimensionY;
+  void paint(
+    Canvas canvas, {
+    required ConstrainedArea area,
+  }) {
+    constraints = area;
+    final yMinOffset = constraints.yMin + thirdDimensionY;
+
+    if (constraints.height <= 0) return;
 
     final fillPaint = Paint()
       ..color = fill
@@ -78,10 +85,10 @@ class Cube extends Bar {
 
     // draw front
     final front = Rect.fromLTWH(
-      xMin,
+      constraints.xMin,
       yMinOffset,
-      size.width - thirdDimensionX,
-      size.height - thirdDimensionY,
+      constraints.width - thirdDimensionX,
+      constraints.height - thirdDimensionY,
     );
 
     canvas.drawRect(front, fillPaint);
@@ -91,19 +98,27 @@ class Cube extends Bar {
 
     // top
     final topPath = Path();
-    topPath.moveTo(xMin, yMinOffset);
-    topPath.lineTo(xMin + thirdDimensionX, yMinOffset - thirdDimensionY);
-    topPath.lineTo(xMin + size.width, yMinOffset - thirdDimensionY);
-    topPath.lineTo((xMin + size.width) - thirdDimensionX, yMinOffset);
+    topPath.moveTo(constraints.xMin, yMinOffset);
+    topPath.lineTo(
+        constraints.xMin + thirdDimensionX, yMinOffset - thirdDimensionY);
+    topPath.lineTo(
+        constraints.xMin + constraints.width, yMinOffset - thirdDimensionY);
+    topPath.lineTo(
+        (constraints.xMin + constraints.width) - thirdDimensionX, yMinOffset);
     topPath.close();
 
     // right
     final rightPath = Path();
-    rightPath.moveTo(xMin + size.width, yMinOffset - thirdDimensionY);
-    rightPath.lineTo(xMin + size.width,
-        (yMinOffset - thirdDimensionY) + (size.height - thirdDimensionY));
-    rightPath.lineTo((xMin + size.width) - thirdDimensionX, yMax);
-    rightPath.lineTo((xMin + size.width) - thirdDimensionX, yMinOffset);
+    rightPath.moveTo(
+        constraints.xMin + constraints.width, yMinOffset - thirdDimensionY);
+    rightPath.lineTo(
+        constraints.xMin + constraints.width,
+        (yMinOffset - thirdDimensionY) +
+            (constraints.height - thirdDimensionY));
+    rightPath.lineTo((constraints.xMin + constraints.width) - thirdDimensionX,
+        constraints.yMax);
+    rightPath.lineTo(
+        (constraints.xMin + constraints.width) - thirdDimensionX, yMinOffset);
 
     canvas.drawPath(topPath, secondaryFillPaint);
     canvas.drawPath(rightPath, tertiaryFillPaint);

@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
-import 'package:three_dimensional_bar_chart/widgets/bars/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
 
-/// [pixel] - The constraint of the bar is the pixel value of [Bar.width].
+/// [pixel] - The constraint of the bar is the pixel value of [Bar.width] or [Bar.height].
 ///
-/// [percentage] - The constraint of the bar is the percentage value of [Bar.width].
+/// [percentage] - The constraint of the bar is the percentage value of [Bar.width] or [Bar.height].
 ///
 /// [auto] - All bars have equal constraints, and consume 100% of the available space.
 /// e.g. If there are 5 bars, each bar will consume 20% of the entire chart
@@ -27,6 +28,7 @@ class OffsetY {
 class BarChartController<T extends Bar> extends ChangeNotifier {
   BarChartController({
     required List<T> bars,
+    List<Line> lines = const [],
     BarConstraintMode barWidthType = BarConstraintMode.auto,
     BarConstraintMode barHeightType = BarConstraintMode.auto,
     OffsetY offsetY = const OffsetY(upper: 0, lower: 0),
@@ -34,6 +36,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   }) {
     _bars = bars;
     _gap = gap;
+    _lines = lines;
     _barWidthType = barWidthType;
     _barHeightType = barHeightType;
     _offsetY = offsetY;
@@ -43,9 +46,11 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   late BarConstraintMode _barHeightType;
   late double _gap;
   late OffsetY _offsetY;
-  late final List<T> _bars;
+  late List<T> _bars;
+  late List<Line> _lines;
 
   List<T> get bars => _bars;
+  List<Line> get lines => _lines;
   double get gap => _gap;
   BarConstraintMode get barWidthType => _barWidthType;
   BarConstraintMode get barHeightType => _barHeightType;
@@ -73,6 +78,11 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
 
   set offsetY(OffsetY offsetY) {
     _offsetY = offsetY;
+    notifyListeners();
+  }
+
+  set lines(List<Line> lines) {
+    this.lines = lines;
     notifyListeners();
   }
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
 import 'package:three_dimensional_bar_chart/widgets/bar_chart.dart';
-import 'package:three_dimensional_bar_chart/widgets/bars/cube.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/cube.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
 
 const primaryFill = Color(0xFF155B75);
 const secondaryFill = Color(0xFF155B75);
@@ -42,17 +44,34 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final autoWidthController = BarChartController(
-    bars: List.generate(
-      10,
-      (index) => Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
+      bars: List.generate(
+        10,
+        (index) => Bar(
+          fill: primaryFill,
+          stroke: stroke,
+          height: .5,
+          lines: [
+            const HorizontalLine(
+              fill: Colors.white,
+              dy: LineDimension(
+                  mode: LineConstraintMode.percentage, value: 0.5),
+              width:
+                  LineDimension(mode: LineConstraintMode.percentage, value: 1),
+              height: LineDimension(mode: LineConstraintMode.pixel, value: 1),
+            ),
+          ],
+        ),
       ),
-    ),
-    barWidthType: BarConstraintMode.auto,
-  );
+      barWidthType: BarConstraintMode.auto,
+      barHeightType: BarConstraintMode.percentage,
+      lines: [
+        const HorizontalLine(
+          fill: Colors.white,
+          dy: LineDimension(mode: LineConstraintMode.pixel, value: 20),
+          width: LineDimension(mode: LineConstraintMode.percentage, value: 1),
+          height: LineDimension(mode: LineConstraintMode.pixel, value: 1),
+        ),
+      ]);
 
   final percentageWidthController = BarChartController(
     bars: [
@@ -142,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
     barWidthType: BarConstraintMode.pixel,
   );
 
-  BarChartController<Cube> get controller => percentageWidthController;
+  BarChartController<Bar> get controller => autoWidthController;
 
   @override
   Widget build(BuildContext context) {
@@ -162,8 +181,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   index,
                   cube.copyWith(
                     fill: stroke,
-                    secondaryFill: stroke,
-                    tertiaryFill: stroke,
+                    // secondaryFill: stroke,
+                    // tertiaryFill: stroke,
                     stroke: primaryFill,
                   ),
                 );
@@ -172,8 +191,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   index,
                   cube.copyWith(
                     fill: primaryFill,
-                    secondaryFill: secondaryFill,
-                    tertiaryFill: tertiaryFill,
+                    // secondaryFill: secondaryFill,
+                    // tertiaryFill: tertiaryFill,
                     stroke: stroke,
                   ),
                 );
