@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:three_dimensional_bar_chart/errors/bar_chart_errors.dart';
 import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
@@ -67,15 +68,17 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
     debugPrint('PAINTING');
     if (controller.bars.isEmpty) return;
 
-    _verifyPercentageConstraints(
-      controller.barWidthType,
-      controller.barHeightType,
-      controller.bars,
+    final chartConstraints = ConstrainedArea(
+      xMin: 0 + controller.padding.left,
+      xMax: size.width - controller.padding.right,
+      yMin: 0 + controller.padding.top,
+      yMax: size.height - controller.padding.bottom,
     );
 
-    double dx = 0;
-    final totalAvailableBarSpace =
-        (size.width - ((controller.bars.length - 1) * controller.gap));
+    double dx = chartConstraints.xMin;
+
+    final totalAvailableBarSpace = (chartConstraints.width -
+        ((controller.bars.length - 1) * controller.gap));
 
     for (int i = 0; i < controller.bars.length; i++) {
       final barWidth = _determineBarWidth(
@@ -85,54 +88,33 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
         controller.bars[i].width,
       );
 
-      final yMin = _determineYMin(
-        controller.barHeightType,
-        size.height,
-        controller.bars[i].height,
-        controller.offsetY.upper,
-      );
-
-      final xMax = (dx + barWidth).roundToDouble();
-
-      if (xMax > size.width) {
+      final xMaxBar = (dx + barWidth).roundToDouble();
+      if (xMaxBar > chartConstraints.xMax) {
         if (controller.barWidthType != BarConstraintMode.pixel) {
           // if out of bounds
-          throw Exception(
-              'PAINT ERROR: Bar[$i] width is too large for the available space.');
+          throw OutOfBoundsException(
+              'Cannot paint bar[$i] with width [$barWidth] because it exceeds the chart xMax constraint [${chartConstraints.xMax}]');
         }
         break;
       }
 
-      // controller.bars[i].setBounds(
-      //   index: i,
-      //   xMin: dx,
-      //   xMax: xMax,
-      //   yMin: yMin,
-      //   yMax: size.height,
-      // );
       controller.bars[i].paint(
         canvas,
         area: ConstrainedArea(
           xMin: dx,
-          xMax: xMax,
-          yMin: yMin,
-          yMax: size.height,
+          xMax: xMaxBar,
+          yMin: chartConstraints.yMin,
+          yMax: chartConstraints.yMax,
         ),
       );
 
-      // next cube starting x position
+      // next bar xMin
       dx += barWidth + controller.gap;
     }
 
     if (controller.lines.isNotEmpty) {
       for (final line in controller.lines) {
-        line.draw(
-          canvas,
-          xMin: 0,
-          xMax: size.width,
-          yMin: 0,
-          yMax: size.height,
-        );
+        line.paint(canvas, area: chartConstraints);
       }
     }
   }
@@ -154,51 +136,5 @@ double _determineBarWidth(
       return totalAvailableBarSpace * barWidth!;
     case BarConstraintMode.pixel:
       return barWidth!;
-  }
-}
-
-double _determineYMin(
-  BarConstraintMode mode,
-  double sizeY,
-  double? barHeight,
-  double upperOffset,
-) {
-  switch (mode) {
-    case BarConstraintMode.auto:
-      return 0;
-    case BarConstraintMode.percentage:
-      final yMin = sizeY * (1 - barHeight!);
-      if (yMin > sizeY) {
-        throw Exception(
-            'CHART PAINT ERROR: The height of the bar cannot be less 0%');
-      }
-
-      if (yMin < upperOffset) {
-        throw Exception(
-            'CHART PAINT ERROR: The height of the bar cannot exceed 100%');
-      }
-      return yMin;
-    case BarConstraintMode.pixel:
-      final yMin = sizeY - barHeight!;
-      if (yMin > sizeY) {
-        throw Exception(
-            'CHART PAINT ERROR: The height of the bar cannot exceed $sizeY');
-      }
-      return yMin;
-  }
-}
-
-void _verifyPercentageConstraints(
-  BarConstraintMode widthMode,
-  BarConstraintMode heightMode,
-  List<Bar> bars,
-) {
-  if (widthMode == BarConstraintMode.percentage) {
-    final total =
-        bars.map((e) => e.width!).reduce((value, element) => value + element);
-    if (total != 1) {
-      throw Exception(
-          'CHART PAINT ERROR: The sum of all Bar.width values must be equal to 1');
-    }
   }
 }

@@ -1,14 +1,17 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
 import 'package:three_dimensional_bar_chart/widgets/bar_chart.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
-import 'package:three_dimensional_bar_chart/widgets/entities/cube.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
 
 const primaryFill = Color(0xFF155B75);
 const secondaryFill = Color(0xFF155B75);
 const tertiaryFill = Color(0xFF1C3F4C);
 const stroke = Color(0xFF00B0F0);
+
+final rng = Random();
 
 void main() {
   runApp(const MyApp());
@@ -49,119 +52,121 @@ class _MyHomePageState extends State<MyHomePage> {
         (index) => Bar(
           fill: primaryFill,
           stroke: stroke,
-          height: .5,
+          height: BarDimension(
+            mode: BarConstraintMode.percentage,
+            value: rng.nextDouble(),
+          ),
           lines: [
-            const HorizontalLine(
+            HorizontalLine(
               fill: Colors.white,
-              dy: LineDimension(
+              dy: const LineDimension(
                   mode: LineConstraintMode.percentage, value: 0.5),
-              width:
-                  LineDimension(mode: LineConstraintMode.percentage, value: 1),
-              height: LineDimension(mode: LineConstraintMode.pixel, value: 1),
+              width: const LineDimension(
+                  mode: LineConstraintMode.percentage, value: 1),
+              height:
+                  const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+              style: const Dashed(),
             ),
           ],
         ),
       ),
       barWidthType: BarConstraintMode.auto,
-      barHeightType: BarConstraintMode.percentage,
-      lines: [
-        const HorizontalLine(
-          fill: Colors.white,
-          dy: LineDimension(mode: LineConstraintMode.pixel, value: 20),
-          width: LineDimension(mode: LineConstraintMode.percentage, value: 1),
-          height: LineDimension(mode: LineConstraintMode.pixel, value: 1),
-        ),
-      ]);
+      padding: const EdgeInsets.all(20)
+      // lines: [
+      //   HorizontalLine(
+      //     fill: Colors.white,
+      //     dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
+      //     width:
+      //         const LineDimension(mode: LineConstraintMode.percentage, value: 1),
+      //     height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+      //   ),
+      // ],
+      );
 
   final percentageWidthController = BarChartController(
     bars: [
-      Cube(
+      Bar(
         fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
         stroke: stroke,
         width: 0.20,
-        height: 1,
+        height:
+            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
       ),
-      Cube(
+      Bar(
         fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
         stroke: stroke,
         width: 0.10,
-        height: 0,
+        height:
+            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
       ),
-      Cube(
+      Bar(
         fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
         stroke: stroke,
         width: 0.10,
-        height: 0.10,
+        height:
+            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
       ),
-      Cube(
+      Bar(
         fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
         stroke: stroke,
         width: 0.50,
-        height: 0.50,
+        height:
+            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
       ),
-      Cube(
+      Bar(
         fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
         stroke: stroke,
         width: 0.1,
-        height: 0.1,
+        height:
+            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
       ),
     ],
     barWidthType: BarConstraintMode.percentage,
-    barHeightType: BarConstraintMode.percentage,
+    padding: const EdgeInsets.all(15),
   );
 
-  final pixelWidthController = BarChartController(
-    bars: [
-      Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
-        width: 50,
-      ),
-      Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
-        width: 100,
-      ),
-      Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
-        width: 50,
-      ),
-      Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
-        width: 75,
-      ),
-      Cube(
-        fill: primaryFill,
-        secondaryFill: secondaryFill,
-        tertiaryFill: tertiaryFill,
-        stroke: stroke,
-        width: 100,
-      ),
-    ],
-    barWidthType: BarConstraintMode.pixel,
-  );
+  // final pixelWidthController = BarChartController(
+  //   bars: [
+  //     Cube(
+  //       fill: primaryFill,
+  //       secondaryFill: secondaryFill,
+  //       tertiaryFill: tertiaryFill,
+  //       stroke: stroke,
+  //       width: 50,
+  //     ),
+  //     Cube(
+  //       fill: primaryFill,
+  //       secondaryFill: secondaryFill,
+  //       tertiaryFill: tertiaryFill,
+  //       stroke: stroke,
+  //       width: 100,
+  //     ),
+  //     Cube(
+  //       fill: primaryFill,
+  //       secondaryFill: secondaryFill,
+  //       tertiaryFill: tertiaryFill,
+  //       stroke: stroke,
+  //       width: 50,
+  //     ),
+  //     Cube(
+  //       fill: primaryFill,
+  //       secondaryFill: secondaryFill,
+  //       tertiaryFill: tertiaryFill,
+  //       stroke: stroke,
+  //       width: 75,
+  //     ),
+  //     Cube(
+  //       fill: primaryFill,
+  //       secondaryFill: secondaryFill,
+  //       tertiaryFill: tertiaryFill,
+  //       stroke: stroke,
+  //       width: 100,
+  //     ),
+  //   ],
+  //   barWidthType: BarConstraintMode.pixel,
+  // );
 
-  BarChartController<Bar> get controller => autoWidthController;
+  BarChartController<Bar> get controller => percentageWidthController;
 
   @override
   Widget build(BuildContext context) {

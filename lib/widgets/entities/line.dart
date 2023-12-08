@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 
 /// [pixel] - The constraint of the line is the pixel value of [Line.width] or [Line.height].
 ///
@@ -18,60 +19,66 @@ class LineDimension {
   final double value;
 }
 
-abstract class Line {
-  const Line({
+abstract class DefaultLineStyle {
+  const DefaultLineStyle();
+}
+
+class Dashed extends DefaultLineStyle {
+  const Dashed({
+    this.width = 4.0,
+    this.gap = 4.0,
+  });
+  final double width;
+  final double gap;
+}
+
+abstract class Line<T extends DefaultLineStyle> extends ConstrainedPainter {
+  Line({
     required this.fill,
     required this.width,
     required this.height,
+    this.style,
+    super.constraints,
   });
 
   final Color fill;
   final LineDimension width;
   final LineDimension height;
-
-  void draw(
-    Canvas canvas, {
-    required double xMin,
-    required double xMax,
-    required double yMin,
-    required double yMax,
-  });
+  final T? style;
 }
 
-class HorizontalLine extends Line {
-  const HorizontalLine({
+class HorizontalLine<T extends DefaultLineStyle> extends Line {
+  HorizontalLine({
     required super.fill,
     required this.dy,
     required super.width,
     required super.height,
-  });
+    T? style,
+    super.constraints,
+  }) : super(style: style);
 
   final LineDimension dy;
 
   @override
-  void draw(
+  void paint(
     Canvas canvas, {
-    required double xMin,
-    required double xMax,
-    required double yMin,
-    required double yMax,
+    required ConstrainedArea area,
   }) {
-    final constraints = Size(xMax - xMin, yMax - yMin);
+    constraints = area;
     double lineEndX = width.mode == LineConstraintMode.percentage
-        ? xMin + (width.value * constraints.width)
-        : xMin + width.value;
+        ? constraints.xMin + (width.value * constraints.width)
+        : constraints.xMin + width.value;
 
     double lineY = dy.mode == LineConstraintMode.percentage
-        ? yMin + ((1 - dy.value) * constraints.height)
-        : yMin + dy.value;
+        ? constraints.yMin + ((1 - dy.value) * constraints.height)
+        : constraints.yMin + dy.value;
 
-    if (lineEndX <= xMin || lineY < yMin || lineY > yMax) return;
-    if (lineEndX > xMax) {
-      lineEndX = xMax;
+    if (lineEndX <= constraints.xMin ||
+        lineY < constraints.yMin ||
+        lineY > constraints.yMax) return;
+    if (lineEndX > constraints.xMax) {
+      lineEndX = constraints.xMax;
     }
-
-    final p1 = Offset(xMin, lineY);
-    final p2 = Offset(lineEndX, lineY);
 
     final paint = Paint()
       ..color = fill
@@ -79,6 +86,35 @@ class HorizontalLine extends Line {
           ? constraints.height * height.value
           : height.value
       ..style = PaintingStyle.stroke;
+
+    if (style != null) {
+      if (style is Dashed) {
+        final dashWidth = (style as Dashed).width;
+        final dashGap = (style as Dashed).gap;
+
+        double dx = constraints.xMin;
+
+        final dash = Path();
+
+        while (dx < (lineEndX - dashWidth)) {
+          dash
+            ..moveTo(dx, lineY)
+            ..lineTo(dx + dashWidth, lineY);
+          dx += dashWidth + dashGap;
+        }
+
+        if (lineEndX - dx > 0) {
+          dash
+            ..moveTo(dx, lineY)
+            ..lineTo(lineEndX, lineY);
+        }
+        canvas.drawPath(dash, paint);
+        return;
+      }
+    }
+
+    final p1 = Offset(constraints.xMin, lineY);
+    final p2 = Offset(lineEndX, lineY);
 
     canvas.drawLine(p1, p2, paint);
   }

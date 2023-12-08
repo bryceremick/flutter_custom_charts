@@ -30,31 +30,29 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     required List<T> bars,
     List<Line> lines = const [],
     BarConstraintMode barWidthType = BarConstraintMode.auto,
-    BarConstraintMode barHeightType = BarConstraintMode.auto,
-    OffsetY offsetY = const OffsetY(upper: 0, lower: 0),
+    EdgeInsets padding = const EdgeInsets.all(0),
     double gap = 15,
   }) {
     _bars = bars;
     _gap = gap;
     _lines = lines;
     _barWidthType = barWidthType;
-    _barHeightType = barHeightType;
-    _offsetY = offsetY;
+    _padding = padding;
   }
 
   late BarConstraintMode _barWidthType;
-  late BarConstraintMode _barHeightType;
   late double _gap;
-  late OffsetY _offsetY;
   late List<T> _bars;
   late List<Line> _lines;
+  late EdgeInsets _padding;
 
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
   double get gap => _gap;
   BarConstraintMode get barWidthType => _barWidthType;
-  BarConstraintMode get barHeightType => _barHeightType;
-  OffsetY get offsetY => _offsetY;
+  EdgeInsets get padding => _padding;
+  double get totalBarsWidth =>
+      bars.map((e) => e.width!).reduce((value, element) => value + element);
 
   set bars(List<T> bars) {
     _bars = bars;
@@ -71,18 +69,13 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     notifyListeners();
   }
 
-  set barHeightType(BarConstraintMode barHeightType) {
-    _barHeightType = barHeightType;
-    notifyListeners();
-  }
-
-  set offsetY(OffsetY offsetY) {
-    _offsetY = offsetY;
-    notifyListeners();
-  }
-
   set lines(List<Line> lines) {
     this.lines = lines;
+    notifyListeners();
+  }
+
+  set padding(EdgeInsets padding) {
+    _padding = padding;
     notifyListeners();
   }
 

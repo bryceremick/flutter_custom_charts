@@ -6,8 +6,8 @@ import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 class Cube extends Bar {
   Cube({
     required super.fill,
+    required super.height,
     super.width,
-    super.height,
     super.stroke,
     this.thirdDimensionX = 28,
     this.thirdDimensionY = 20,
@@ -27,7 +27,7 @@ class Cube extends Bar {
   @override
   Cube copyWith({
     double? width,
-    double? height,
+    BarDimension? height,
     Color? fill,
     Color? stroke,
     double? thirdDimensionX,

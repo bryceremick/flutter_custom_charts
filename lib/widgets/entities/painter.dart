@@ -17,6 +17,11 @@ class ConstrainedArea {
   double get height => yMax - yMin;
   Size get size => Size(width, height);
 
+  bool isOutOfBoundsY(double y) => y < yMin || y > yMax;
+  bool isOutOfBoundsX(double x) => x < xMin || x > xMax;
+  bool isOutOfBounds(double x, double y) =>
+      isOutOfBoundsX(x) || isOutOfBoundsY(y);
+
   @override
   String toString() {
     return 'ConstrainedArea(xMin: $xMin, xMax: $xMax, yMin: $yMin, yMax: $yMax)';
