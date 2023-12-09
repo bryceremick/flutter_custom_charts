@@ -8,6 +8,12 @@ class ConstrainedArea {
     required this.yMax,
   });
 
+  const ConstrainedArea.empty()
+      : xMin = 0,
+        xMax = 0,
+        yMin = 0,
+        yMax = 0;
+
   final double xMin;
   final double xMax;
   final double yMin;

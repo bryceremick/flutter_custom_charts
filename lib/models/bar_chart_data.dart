@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
+import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 
 /// [pixel] - The constraint of the bar is the pixel value of [Bar.width] or [Bar.height].
 ///
@@ -45,12 +46,20 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   late List<T> _bars;
   late List<Line> _lines;
   late EdgeInsets _padding;
+  double _xScrollOffset = 0;
+  ConstrainedArea chartConstraints = const ConstrainedArea.empty();
 
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
   double get gap => _gap;
   BarConstraintMode get barWidthType => _barWidthType;
   EdgeInsets get padding => _padding;
+  double get xScrollOffset => _xScrollOffset;
+  double get xScrollOffsetMax =>
+      (((totalBarsWidth + (gap * (bars.length - 1))) * -1) +
+          chartConstraints.width);
+  double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
+
   double get totalBarsWidth =>
       bars.map((e) => e.width!).reduce((value, element) => value + element);
 
@@ -79,6 +88,11 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     notifyListeners();
   }
 
+  set xScrollOffset(double xScrollOffset) {
+    _xScrollOffset = xScrollOffset;
+    notifyListeners();
+  }
+
   void add(T newBar) {
     _bars.add(newBar);
     notifyListeners();
@@ -101,6 +115,17 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
 
   void replace(int index, T newBar) {
     _bars[index] = newBar;
+    notifyListeners();
+  }
+
+  void scrollToPercentageX(double percentage) {
+    if (percentage > 1) {
+      percentage = 1;
+    }
+    if (percentage < 0) {
+      percentage = 0;
+    }
+    _xScrollOffset = xScrollOffsetMax * percentage;
     notifyListeners();
   }
 

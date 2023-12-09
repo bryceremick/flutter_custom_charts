@@ -20,6 +20,7 @@ class Bar extends ConstrainedPainter {
     required this.height,
     this.stroke,
     this.width,
+    this.label,
     this.lines = const [],
     super.constraints,
   });
@@ -27,6 +28,7 @@ class Bar extends ConstrainedPainter {
   Color fill;
   Color? stroke;
   double? width;
+  String? label;
   BarDimension height;
   List<Line> lines;
 

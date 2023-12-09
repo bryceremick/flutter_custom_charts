@@ -125,48 +125,45 @@ class _MyHomePageState extends State<MyHomePage> {
     padding: const EdgeInsets.all(15),
   );
 
-  // final pixelWidthController = BarChartController(
-  //   bars: [
-  //     Cube(
-  //       fill: primaryFill,
-  //       secondaryFill: secondaryFill,
-  //       tertiaryFill: tertiaryFill,
-  //       stroke: stroke,
-  //       width: 50,
-  //     ),
-  //     Cube(
-  //       fill: primaryFill,
-  //       secondaryFill: secondaryFill,
-  //       tertiaryFill: tertiaryFill,
-  //       stroke: stroke,
-  //       width: 100,
-  //     ),
-  //     Cube(
-  //       fill: primaryFill,
-  //       secondaryFill: secondaryFill,
-  //       tertiaryFill: tertiaryFill,
-  //       stroke: stroke,
-  //       width: 50,
-  //     ),
-  //     Cube(
-  //       fill: primaryFill,
-  //       secondaryFill: secondaryFill,
-  //       tertiaryFill: tertiaryFill,
-  //       stroke: stroke,
-  //       width: 75,
-  //     ),
-  //     Cube(
-  //       fill: primaryFill,
-  //       secondaryFill: secondaryFill,
-  //       tertiaryFill: tertiaryFill,
-  //       stroke: stroke,
-  //       width: 100,
-  //     ),
-  //   ],
-  //   barWidthType: BarConstraintMode.pixel,
-  // );
+  final pixelWidthController = BarChartController(
+    bars: List.generate(
+      20,
+      (index) => Bar(
+        fill: primaryFill,
+        stroke: stroke,
+        height: const BarDimension(
+          mode: BarConstraintMode.percentage,
+          value: 0.5,
+        ),
+        width: 200,
+        lines: [
+          HorizontalLine(
+            fill: Colors.white,
+            dy: const LineDimension(
+                mode: LineConstraintMode.percentage, value: 0.5),
+            width: const LineDimension(
+                mode: LineConstraintMode.percentage, value: 1),
+            height:
+                const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+            style: const Dashed(),
+          ),
+        ],
+      ),
+    ),
+    barWidthType: BarConstraintMode.pixel,
+    // padding: const EdgeInsets.all(15),
+    lines: [
+      HorizontalLine(
+        fill: Colors.white,
+        dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
+        width:
+            const LineDimension(mode: LineConstraintMode.percentage, value: 1),
+        height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+      ),
+    ],
+  );
 
-  BarChartController<Bar> get controller => percentageWidthController;
+  BarChartController<Bar> get controller => pixelWidthController;
 
   @override
   Widget build(BuildContext context) {
