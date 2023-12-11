@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -67,10 +68,14 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
           },
           onHorizontalDragEnd: (details) {
             double velocity = details.velocity.pixelsPerSecond.dx / 50;
+            const double degredationFactor = 0.85;
+            const int tickTime = 2;
+            int elapsedTime = 0;
             _tweenTimer?.cancel();
             _tweenTimer =
-                Timer.periodic(const Duration(milliseconds: 2), (timer) {
-              velocity *= 0.85;
+                Timer.periodic(const Duration(milliseconds: tickTime), (timer) {
+              elapsedTime += 2;
+              velocity *= max(degredationFactor - elapsedTime / 10000, 0.5);
 
               final offset = widget.controller.xScrollOffset + velocity;
               if (offset < 0 && offset > widget.controller.xScrollOffsetMax) {
