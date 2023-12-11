@@ -8,6 +8,9 @@ import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
 import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 
+const double _degredationFactor = 0.85;
+const int _tweenTickTime = 2;
+
 class BarChart<T extends Bar> extends StatefulWidget {
   const BarChart({
     super.key,
@@ -67,15 +70,13 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
             _tweenTimer = null;
           },
           onHorizontalDragEnd: (details) {
-            double velocity = details.velocity.pixelsPerSecond.dx / 50;
-            const double degredationFactor = 0.85;
-            const int tickTime = 2;
-            int elapsedTime = 0;
             _tweenTimer?.cancel();
-            _tweenTimer =
-                Timer.periodic(const Duration(milliseconds: tickTime), (timer) {
-              elapsedTime += 2;
-              velocity *= max(degredationFactor - elapsedTime / 10000, 0.5);
+            double velocity = details.velocity.pixelsPerSecond.dx / 50;
+            int elapsedTime = 0;
+            _tweenTimer = Timer.periodic(
+                const Duration(milliseconds: _tweenTickTime), (timer) {
+              elapsedTime += _tweenTickTime;
+              velocity *= max(_degredationFactor - elapsedTime / 10000, 0.5);
 
               final offset = widget.controller.xScrollOffset + velocity;
               if (offset < 0 && offset > widget.controller.xScrollOffsetMax) {
@@ -89,15 +90,15 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
           },
           child: Listener(
             onPointerSignal: (PointerSignalEvent event) {
-              final offset = _nextScrollOffset(
-                event.delta.dx,
-                barWidthType: widget.controller.barWidthType,
-                xScrollOffset: widget.controller.xScrollOffset,
-                xScrollOffsetMax: widget.controller.xScrollOffsetMax,
-              );
-              if (offset != null) {
-                widget.controller.xScrollOffset = offset;
-              }
+              // final offset = _nextScrollOffset(
+              //   event.delta.dx,
+              //   barWidthType: widget.controller.barWidthType,
+              //   xScrollOffset: widget.controller.xScrollOffset,
+              //   xScrollOffsetMax: widget.controller.xScrollOffsetMax,
+              // );
+              // if (offset != null) {
+              //   widget.controller.xScrollOffset = offset;
+              // }
             },
             child: CustomPaint(
               // size: Size(widget.width, widget.height),
