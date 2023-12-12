@@ -1,10 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:three_dimensional_bar_chart/models/bar_chart_data.dart';
-import 'package:three_dimensional_bar_chart/widgets/bar_chart.dart';
-import 'package:three_dimensional_bar_chart/widgets/entities/bar.dart';
-import 'package:three_dimensional_bar_chart/widgets/entities/line.dart';
+import 'package:flutter_custom_charts/flutter_custom_charts.dart';
 
 const primaryFill = Color(0xFF155B75);
 const secondaryFill = Color(0xFF155B75);
@@ -70,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      barWidthType: AxisDistanceType.auto,
+      xAxisType: AxisDistanceType.auto,
       padding: const EdgeInsets.all(20)
       // lines: [
       //   HorizontalLine(
@@ -121,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
     ],
-    barWidthType: AxisDistanceType.percentage,
+    xAxisType: AxisDistanceType.percentage,
     padding: const EdgeInsets.all(15),
   );
 
@@ -150,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     ),
-    barWidthType: AxisDistanceType.pixel,
+    xAxisType: AxisDistanceType.pixel,
     // padding: const EdgeInsets.all(15),
     lines: [
       HorizontalLine(

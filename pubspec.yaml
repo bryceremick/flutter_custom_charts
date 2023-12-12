@@ -11,6 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_custom_charts:
+    path: packages/flutter_custom_charts
 
   cupertino_icons: ^1.0.2
 

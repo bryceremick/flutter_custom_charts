@@ -62,6 +62,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_custom_charts:
+    dependency: "direct main"
+    description:
+      path: "packages/flutter_custom_charts"
+      relative: true
+    source: path
+    version: "0.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -185,4 +192,5 @@ packages:
     source: hosted
     version: "2.1.4"
 sdks:
-  dart: ">=3.0.0 <4.0.0"
+  dart: ">=3.0.6 <4.0.0"
+  flutter: ">=1.17.0"
