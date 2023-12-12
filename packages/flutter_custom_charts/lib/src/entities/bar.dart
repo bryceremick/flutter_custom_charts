@@ -44,6 +44,12 @@ class Bar extends BarPainter {
     return y;
   }
 
+  bool isOutOfBounds(double x, double y) {
+    return constraints.isOutOfBoundsX(x) ||
+        y < calculatedYMin ||
+        y > constraints.yMax;
+  }
+
   Bar copyWith({
     Color? fill,
     Color? stroke,
@@ -71,8 +77,6 @@ class Bar extends BarPainter {
     super.constraints = area;
     _yAxisType = yAxisType;
     _maxHeight = maxHeight;
-
-    print(maxHeight);
 
     if (constraints.height <= 0 || constraints.width <= 0) {
       return;

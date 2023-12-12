@@ -37,9 +37,7 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
             final y = details.localPosition.dy;
 
             for (int i = 0; i < widget.controller.bars.length; i++) {
-              if (!widget.controller.bars[i].constraints.isOutOfBoundsX(x) &&
-                  y >= widget.controller.bars[i].calculatedYMin &&
-                  y <= widget.controller.bars[i].constraints.yMax) {
+              if (!widget.controller.bars[i].isOutOfBounds(x, y)) {
                 widget.onTap!.call(i, widget.controller.bars[i]);
                 break;
               }
