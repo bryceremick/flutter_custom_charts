@@ -10,27 +10,17 @@ import 'package:three_dimensional_bar_chart/widgets/entities/painter.dart';
 /// [auto] - All bars have equal constraints, and consume 100% of the available space.
 /// e.g. If there are 5 bars, each bar will consume 20% of the entire chart
 /// width/height constraint.
-enum BarConstraintMode {
+enum AxisDistanceType {
   pixel,
   percentage,
   auto,
-}
-
-class OffsetY {
-  const OffsetY({
-    required this.upper,
-    required this.lower,
-  });
-
-  final double upper;
-  final double lower;
 }
 
 class BarChartController<T extends Bar> extends ChangeNotifier {
   BarChartController({
     required List<T> bars,
     List<Line> lines = const [],
-    BarConstraintMode barWidthType = BarConstraintMode.auto,
+    AxisDistanceType barWidthType = AxisDistanceType.auto,
     EdgeInsets padding = const EdgeInsets.all(0),
     double gap = 15,
   }) {
@@ -41,7 +31,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     _padding = padding;
   }
 
-  late BarConstraintMode _barWidthType;
+  late AxisDistanceType _barWidthType;
   late double _gap;
   late List<T> _bars;
   late List<Line> _lines;
@@ -52,16 +42,19 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
   double get gap => _gap;
-  BarConstraintMode get barWidthType => _barWidthType;
+  AxisDistanceType get barWidthType => _barWidthType;
   EdgeInsets get padding => _padding;
   double get xScrollOffset => _xScrollOffset;
+
   double get xScrollOffsetMax =>
       (((totalBarsWidth + (gap * (bars.length - 1))) * -1) +
           chartConstraints.width);
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
-
   double get totalBarsWidth =>
       bars.map((e) => e.width!).reduce((value, element) => value + element);
+  double get barHeightMax => bars
+      .map((e) => e.height.value)
+      .reduce((value, element) => value + element);
 
   set bars(List<T> bars) {
     _bars = bars;
@@ -73,7 +66,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     notifyListeners();
   }
 
-  set barWidthType(BarConstraintMode barWidthType) {
+  set barWidthType(AxisDistanceType barWidthType) {
     _barWidthType = barWidthType;
     notifyListeners();
   }

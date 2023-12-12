@@ -10,7 +10,7 @@ class BarDimension {
     required this.value,
   });
 
-  final BarConstraintMode mode;
+  final AxisDistanceType mode;
   final double value;
 }
 
@@ -40,11 +40,11 @@ class Bar extends ConstrainedPainter {
   double get calculatedYMin {
     late final double y;
     switch (height.mode) {
-      case BarConstraintMode.auto:
+      case AxisDistanceType.auto:
         y = constraints.yMin;
-      case BarConstraintMode.percentage:
+      case AxisDistanceType.percentage:
         y = (constraints.height * (1 - height.value)) + constraints.yMin;
-      case BarConstraintMode.pixel:
+      case AxisDistanceType.pixel:
         y = constraints.yMax - height.value;
     }
     if (constraints.isOutOfBoundsY(y)) {

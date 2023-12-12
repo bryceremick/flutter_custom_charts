@@ -150,7 +150,7 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
 
       final xMaxBar = (dx + barWidth).roundToDouble();
       if (xMaxBar > chartConstraints.xMax &&
-          controller.barWidthType != BarConstraintMode.pixel) {
+          controller.barWidthType != AxisDistanceType.pixel) {
         throw OutOfBoundsException(
             'Cannot paint bar[$i] with width [$barWidth] because it exceeds the chart xMax constraint [${chartConstraints.xMax}]');
       }
@@ -187,29 +187,29 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
 }
 
 double _determineBarWidth(
-  BarConstraintMode mode,
+  AxisDistanceType mode,
   double totalAvailableBarSpace,
   int barsLength,
   double? barWidth,
 ) {
   switch (mode) {
-    case BarConstraintMode.auto:
+    case AxisDistanceType.auto:
       return totalAvailableBarSpace / barsLength;
-    case BarConstraintMode.percentage:
+    case AxisDistanceType.percentage:
       return totalAvailableBarSpace * barWidth!;
-    case BarConstraintMode.pixel:
+    case AxisDistanceType.pixel:
       return barWidth!;
   }
 }
 
 double? _nextScrollOffset(
   double dx, {
-  required BarConstraintMode barWidthType,
+  required AxisDistanceType barWidthType,
   required double xScrollOffset,
   required double xScrollOffsetMax,
 }) {
   // print('current: $xScrollOffset, max: $xScrollOffsetMax');
-  if (barWidthType == BarConstraintMode.pixel &&
+  if (barWidthType == AxisDistanceType.pixel &&
       xScrollOffset <= 0 &&
       xScrollOffset >= xScrollOffsetMax) {
     final offset = xScrollOffset + dx;

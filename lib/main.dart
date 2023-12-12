@@ -53,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
           fill: primaryFill,
           stroke: stroke,
           height: BarDimension(
-            mode: BarConstraintMode.percentage,
+            mode: AxisDistanceType.percentage,
             value: rng.nextDouble(),
           ),
           lines: [
@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      barWidthType: BarConstraintMode.auto,
+      barWidthType: AxisDistanceType.auto,
       padding: const EdgeInsets.all(20)
       // lines: [
       //   HorizontalLine(
@@ -90,38 +90,38 @@ class _MyHomePageState extends State<MyHomePage> {
         stroke: stroke,
         width: 0.20,
         height:
-            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
+            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
         height:
-            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
+            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
         height:
-            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
+            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.50,
         height:
-            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
+            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.1,
         height:
-            const BarDimension(mode: BarConstraintMode.percentage, value: 0.5),
+            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
       ),
     ],
-    barWidthType: BarConstraintMode.percentage,
+    barWidthType: AxisDistanceType.percentage,
     padding: const EdgeInsets.all(15),
   );
 
@@ -132,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
         fill: primaryFill,
         stroke: stroke,
         height: const BarDimension(
-          mode: BarConstraintMode.percentage,
+          mode: AxisDistanceType.percentage,
           value: 0.5,
         ),
         width: 200,
@@ -150,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     ),
-    barWidthType: BarConstraintMode.pixel,
+    barWidthType: AxisDistanceType.pixel,
     // padding: const EdgeInsets.all(15),
     lines: [
       HorizontalLine(
