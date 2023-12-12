@@ -84,35 +84,35 @@ class _MyHomePageState extends State<MyHomePage> {
         fill: primaryFill,
         stroke: stroke,
         width: 0.20,
-        height: 0.5,
+        height: 10,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
-        height: 0.5,
+        height: 9,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
-        height: 0.5,
+        height: 8,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.50,
-        height: 0.5,
+        height: 2,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.1,
-        height: 0.5,
+        height: 1,
       ),
     ],
     xAxisType: AxisDistanceType.percentage,
-    yAxisType: AxisDistanceType.percentage,
+    yAxisType: AxisDistanceType.auto,
     padding: const EdgeInsets.all(15),
   );
 
@@ -152,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ],
   );
 
-  BarChartController<Bar> get controller => pixelWidthController;
+  BarChartController<Bar> get controller => percentageWidthController;
 
   @override
   Widget build(BuildContext context) {

@@ -156,6 +156,9 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yMax: chartConstraints.yMax,
         ),
         yAxisType: controller.yAxisType,
+        maxHeight: controller.yAxisType == AxisDistanceType.auto
+            ? controller.barHeightMax
+            : null,
       );
 
       // next bar xMin

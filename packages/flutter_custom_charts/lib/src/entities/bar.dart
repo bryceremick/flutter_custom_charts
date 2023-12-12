@@ -18,7 +18,8 @@ class Bar extends BarPainter {
   double height;
   List<Line> lines;
 
-  late AxisDistanceType _yAxisType;
+  AxisDistanceType _yAxisType = AxisDistanceType.auto;
+  double? _maxHeight = 0;
 
   @override
   String toString() {
@@ -29,7 +30,8 @@ class Bar extends BarPainter {
     late final double y;
     switch (_yAxisType) {
       case AxisDistanceType.auto:
-        y = constraints.yMin;
+        y = (constraints.height * (1 - (height / _maxHeight!))) +
+            constraints.yMin;
       case AxisDistanceType.percentage:
         y = (constraints.height * (1 - height)) + constraints.yMin;
       case AxisDistanceType.pixel:
@@ -64,9 +66,13 @@ class Bar extends BarPainter {
     Canvas canvas, {
     required ConstrainedArea area,
     required AxisDistanceType yAxisType,
+    double? maxHeight,
   }) {
     super.constraints = area;
     _yAxisType = yAxisType;
+    _maxHeight = maxHeight;
+
+    print(maxHeight);
 
     if (constraints.height <= 0 || constraints.width <= 0) {
       return;

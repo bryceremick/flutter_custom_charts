@@ -30,6 +30,7 @@ abstract class BarPainter implements ConstrainedPainter {
     Canvas canvas, {
     required ConstrainedArea area,
     required AxisDistanceType yAxisType,
+    double? maxHeight,
   }) {
     constraints = area;
   }

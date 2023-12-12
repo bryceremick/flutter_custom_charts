@@ -40,8 +40,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
   double get totalBarsWidth =>
       bars.map((e) => e.width!).reduce((value, element) => value + element);
-  double get barHeightMax =>
-      bars.map((e) => e.height).reduce((value, element) => value + element);
+  double get barHeightMax => bars.map((e) => e.height).reduce(max);
 
   set bars(List<T> bars) {
     _bars = bars;
