@@ -31,7 +31,7 @@ class Dashed extends DefaultLineStyle {
   final double gap;
 }
 
-abstract class Line<T extends DefaultLineStyle> extends ConstrainedPainter {
+abstract class Line<T extends DefaultLineStyle> extends LinePainter {
   Line({
     required this.fill,
     required this.width,

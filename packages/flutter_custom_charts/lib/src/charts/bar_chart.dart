@@ -155,6 +155,7 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yMin: chartConstraints.yMin,
           yMax: chartConstraints.yMax,
         ),
+        yAxisType: controller.yAxisType,
       );
 
       // next bar xMin

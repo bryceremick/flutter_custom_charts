@@ -1,11 +1,5 @@
 part of flutter_custom_charts;
 
-enum AxisDistanceType {
-  pixel,
-  percentage,
-  auto,
-}
-
 class BarChartController<T extends Bar> extends ChangeNotifier {
   BarChartController({
     required List<T> bars,
@@ -46,9 +40,8 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
   double get totalBarsWidth =>
       bars.map((e) => e.width!).reduce((value, element) => value + element);
-  double get barHeightMax => bars
-      .map((e) => e.height.value)
-      .reduce((value, element) => value + element);
+  double get barHeightMax =>
+      bars.map((e) => e.height).reduce((value, element) => value + element);
 
   set bars(List<T> bars) {
     _bars = bars;

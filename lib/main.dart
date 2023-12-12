@@ -49,10 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
         (index) => Bar(
           fill: primaryFill,
           stroke: stroke,
-          height: BarDimension(
-            mode: AxisDistanceType.percentage,
-            value: rng.nextDouble(),
-          ),
+          height: rng.nextDouble(),
           lines: [
             HorizontalLine(
               fill: Colors.white,
@@ -68,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       xAxisType: AxisDistanceType.auto,
+      yAxisType: AxisDistanceType.percentage,
       padding: const EdgeInsets.all(20)
       // lines: [
       //   HorizontalLine(
@@ -86,39 +84,35 @@ class _MyHomePageState extends State<MyHomePage> {
         fill: primaryFill,
         stroke: stroke,
         width: 0.20,
-        height:
-            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
+        height: 0.5,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
-        height:
-            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
+        height: 0.5,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.10,
-        height:
-            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
+        height: 0.5,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.50,
-        height:
-            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
+        height: 0.5,
       ),
       Bar(
         fill: primaryFill,
         stroke: stroke,
         width: 0.1,
-        height:
-            const BarDimension(mode: AxisDistanceType.percentage, value: 0.5),
+        height: 0.5,
       ),
     ],
     xAxisType: AxisDistanceType.percentage,
+    yAxisType: AxisDistanceType.percentage,
     padding: const EdgeInsets.all(15),
   );
 
@@ -128,10 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
       (index) => Bar(
         fill: primaryFill,
         stroke: stroke,
-        height: const BarDimension(
-          mode: AxisDistanceType.percentage,
-          value: 0.5,
-        ),
+        height: 0.5,
         width: 200,
         lines: [
           HorizontalLine(
@@ -148,6 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ),
     xAxisType: AxisDistanceType.pixel,
+    yAxisType: AxisDistanceType.percentage,
     // padding: const EdgeInsets.all(15),
     lines: [
       HorizontalLine(

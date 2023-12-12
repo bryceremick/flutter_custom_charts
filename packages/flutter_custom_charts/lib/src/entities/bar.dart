@@ -1,16 +1,6 @@
 part of flutter_custom_charts;
 
-class BarDimension {
-  const BarDimension({
-    required this.mode,
-    required this.value,
-  });
-
-  final AxisDistanceType mode;
-  final double value;
-}
-
-class Bar extends ConstrainedPainter {
+class Bar extends BarPainter {
   Bar({
     required this.fill,
     required this.height,
@@ -25,8 +15,10 @@ class Bar extends ConstrainedPainter {
   Color? stroke;
   double? width;
   String? label;
-  BarDimension height;
+  double height;
   List<Line> lines;
+
+  late AxisDistanceType _yAxisType;
 
   @override
   String toString() {
@@ -35,13 +27,13 @@ class Bar extends ConstrainedPainter {
 
   double get calculatedYMin {
     late final double y;
-    switch (height.mode) {
+    switch (_yAxisType) {
       case AxisDistanceType.auto:
         y = constraints.yMin;
       case AxisDistanceType.percentage:
-        y = (constraints.height * (1 - height.value)) + constraints.yMin;
+        y = (constraints.height * (1 - height)) + constraints.yMin;
       case AxisDistanceType.pixel:
-        y = constraints.yMax - height.value;
+        y = constraints.yMax - height;
     }
     if (constraints.isOutOfBoundsY(y)) {
       throw OutOfBoundsException(
@@ -54,7 +46,7 @@ class Bar extends ConstrainedPainter {
     Color? fill,
     Color? stroke,
     double? width,
-    BarDimension? height,
+    double? height,
     List<Line>? lines,
     ConstrainedArea? constraints,
   }) =>
@@ -71,8 +63,11 @@ class Bar extends ConstrainedPainter {
   void paint(
     Canvas canvas, {
     required ConstrainedArea area,
+    required AxisDistanceType yAxisType,
   }) {
-    constraints = area;
+    super.constraints = area;
+    _yAxisType = yAxisType;
+
     if (constraints.height <= 0 || constraints.width <= 0) {
       return;
     }
