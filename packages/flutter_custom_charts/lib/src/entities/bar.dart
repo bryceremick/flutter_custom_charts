@@ -16,7 +16,7 @@ class Bar extends BarPainter {
   final Color? stroke;
   double? width;
   String? label;
-  // EdgeInsets padding = const EdgeInsets.all(0);
+  EdgeInsets padding = const EdgeInsets.all(0);
   final double yMax;
   final double yMin;
   late double _canvasRelativeYMin;
@@ -87,14 +87,12 @@ class Bar extends BarPainter {
     final yMinCanvas = _canvasRelativeYMin;
     final yMaxCanvas = _canvasRelativeYMax;
 
-    print('yMinCanvas: $yMinCanvas, yMaxCanvas: $yMaxCanvas');
+    final l = constraints.xMin + padding.left;
+    final t = yMinCanvas + padding.top;
+    final r = constraints.xMax - padding.right;
+    final b = yMaxCanvas - padding.bottom;
 
-    final bar = Rect.fromLTRB(
-      constraints.xMin,
-      yMinCanvas,
-      constraints.xMax,
-      yMaxCanvas,
-    );
+    final bar = Rect.fromLTRB(l, t, r, b);
 
     canvas.drawRect(bar, fillPaint);
     if (stroke != null) {
@@ -106,10 +104,10 @@ class Bar extends BarPainter {
         line.paint(
           canvas,
           area: ConstrainedArea(
-            xMin: constraints.xMin,
-            xMax: constraints.xMax,
-            yMin: yMinCanvas,
-            yMax: yMaxCanvas,
+            xMin: l,
+            xMax: r,
+            yMin: t,
+            yMax: b,
           ),
         );
       }
