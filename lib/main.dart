@@ -99,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
         stroke: stroke,
         width: 0.10,
         yMax: 8,
+        yMin: 1,
       ),
       Bar(
         fill: primaryFill,
@@ -111,11 +112,13 @@ class _MyHomePageState extends State<MyHomePage> {
         fill: primaryFill,
         stroke: stroke,
         width: 0.1,
-        yMax: 1,
+        yMax: 6,
+        yMin: 1,
       ),
     ],
     xAxisType: AxisDistanceType.percentage,
-    yAxisType: AxisDistanceType.pixel,
+    yAxisType: AxisDistanceType.auto,
+    explicitChartMax: 11,
     // padding: const EdgeInsets.all(15),
   );
 

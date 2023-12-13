@@ -16,13 +16,14 @@ class Bar extends BarPainter {
   final Color? stroke;
   double? width;
   String? label;
-  EdgeInsets padding = const EdgeInsets.all(0);
-  double yMax;
-  double yMin;
+  // EdgeInsets padding = const EdgeInsets.all(0);
+  final double yMax;
+  final double yMin;
   List<Line> lines;
 
   AxisDistanceType _yAxisType = AxisDistanceType.auto;
-  double? _maxHeight = 0;
+  double? _chartUpperBound = 0;
+  double? _chartLowerBound = 0;
 
   @override
   String toString() {
@@ -41,8 +42,9 @@ class Bar extends BarPainter {
     late final double canvasY;
     switch (_yAxisType) {
       case AxisDistanceType.auto:
-        canvasY = (constraints.height * (1 - (perceivedY / _maxHeight!))) +
-            constraints.yMin;
+        canvasY = (_chartUpperBound! - perceivedY) *
+            (constraints.yMax - constraints.yMin) /
+            (_chartUpperBound! - _chartLowerBound!);
       case AxisDistanceType.percentage:
         canvasY = (constraints.height * (1 - perceivedY)) + constraints.yMin;
       case AxisDistanceType.pixel:
@@ -87,11 +89,13 @@ class Bar extends BarPainter {
     Canvas canvas, {
     required ConstrainedArea area,
     required AxisDistanceType yAxisType,
-    double? maxHeight,
+    double? chartUpperBound,
+    double? chartLowerBound,
   }) {
     super.constraints = area;
     _yAxisType = yAxisType;
-    _maxHeight = maxHeight;
+    _chartUpperBound = chartUpperBound;
+    _chartLowerBound = chartLowerBound;
 
     if (height <= 0 || constraints.height <= 0 || constraints.width <= 0) {
       return;
@@ -111,6 +115,8 @@ class Bar extends BarPainter {
 
     final yMinCanvas = _canvasRelativeYMin;
     final yMaxCanvas = _canvasRelativeYMax;
+
+    print('yMinCanvas: $yMinCanvas, yMaxCanvas: $yMaxCanvas');
 
     final bar = Rect.fromLTRB(
       constraints.xMin,

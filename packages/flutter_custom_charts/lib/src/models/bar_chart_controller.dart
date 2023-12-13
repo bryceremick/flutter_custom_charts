@@ -9,6 +9,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     EdgeInsets padding = const EdgeInsets.all(0),
     double gap = 15,
     double? explicitChartMax,
+    double? explicitChartMin,
   }) {
     _bars = bars;
     _gap = gap;
@@ -17,11 +18,13 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     _yAxisType = yAxisType;
     _padding = padding;
     _explicitChartMax = explicitChartMax;
+    _explicitChartMin = explicitChartMin;
   }
 
   late AxisDistanceType _xAxisType;
   late AxisDistanceType _yAxisType;
   double? _explicitChartMax;
+  double? _explicitChartMin;
   late double _gap;
   late List<T> _bars;
   late List<Line> _lines;
@@ -44,10 +47,15 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   double get totalBarsWidth =>
       bars.map((e) => e.width!).reduce((value, element) => value + element);
   double get implicitChartMax => bars.map((e) => e.yMax).reduce(max);
+  double get implicitChartMin => bars.map((e) => e.yMin).reduce(min);
   double? get explicitChartMax => _explicitChartMax;
-  double get chartMax => explicitChartMax != null
+  double? get explicitChartMin => _explicitChartMin;
+  double get chartUpperBound => explicitChartMax != null
       ? max(explicitChartMax!, implicitChartMax)
       : implicitChartMax;
+  double get chartLowerBound => explicitChartMin != null
+      ? min(explicitChartMin!, implicitChartMin)
+      : implicitChartMin;
 
   set bars(List<T> bars) {
     _bars = bars;
@@ -84,8 +92,13 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     notifyListeners();
   }
 
-  set explicitChartMax(double? explicitBarMax) {
-    _explicitChartMax = explicitBarMax;
+  set explicitChartMax(double? explicitChartMax) {
+    _explicitChartMax = explicitChartMax;
+    notifyListeners();
+  }
+
+  set explicitChartMin(double? explicitChartMin) {
+    _explicitChartMin = explicitChartMin;
     notifyListeners();
   }
 
