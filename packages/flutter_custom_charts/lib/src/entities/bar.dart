@@ -3,7 +3,8 @@ part of flutter_custom_charts;
 class Bar extends BarPainter {
   Bar({
     required this.fill,
-    required this.height,
+    required this.yMax,
+    this.yMin = 0,
     this.stroke,
     this.width,
     this.label,
@@ -11,11 +12,13 @@ class Bar extends BarPainter {
     super.constraints,
   });
 
-  Color fill;
-  Color? stroke;
+  final Color fill;
+  final Color? stroke;
   double? width;
   String? label;
-  double height;
+  EdgeInsets padding = const EdgeInsets.all(0);
+  double yMax;
+  double yMin;
   List<Line> lines;
 
   AxisDistanceType _yAxisType = AxisDistanceType.auto;
@@ -23,38 +26,49 @@ class Bar extends BarPainter {
 
   @override
   String toString() {
-    return 'Bar{fill: $fill, stroke: $stroke, width: $width, height: $height, constraints: $constraints}';
+    return 'Bar{fill: $fill, stroke: $stroke, width: $width, yMax: $yMax, constraints: $constraints}';
   }
 
-  double get calculatedYMin {
-    late final double y;
+  double get _canvasRelativeYMin {
+    return _translateToCanvasY(yMax);
+  }
+
+  double get _canvasRelativeYMax {
+    return _translateToCanvasY(yMin);
+  }
+
+  double _translateToCanvasY(double perceivedY) {
+    late final double canvasY;
     switch (_yAxisType) {
       case AxisDistanceType.auto:
-        y = (constraints.height * (1 - (height / _maxHeight!))) +
+        canvasY = (constraints.height * (1 - (perceivedY / _maxHeight!))) +
             constraints.yMin;
       case AxisDistanceType.percentage:
-        y = (constraints.height * (1 - height)) + constraints.yMin;
+        canvasY = (constraints.height * (1 - perceivedY)) + constraints.yMin;
       case AxisDistanceType.pixel:
-        y = constraints.yMax - height;
+        canvasY = constraints.yMax - perceivedY;
     }
-    if (constraints.isOutOfBoundsY(y)) {
+    if (constraints.isOutOfBoundsY(canvasY)) {
       throw OutOfBoundsException(
-          'Calculated bar height [$y] must be between [${constraints.yMin}] and [${constraints.yMax}]');
+          'Calculated bar height [$canvasY] must be between [${constraints.yMin}] and [${constraints.yMax}]');
     }
-    return y;
+    return canvasY;
   }
+
+  double get height => yMax - yMin;
 
   bool isOutOfBounds(double x, double y) {
     return constraints.isOutOfBoundsX(x) ||
-        y < calculatedYMin ||
-        y > constraints.yMax;
+        y < _canvasRelativeYMin ||
+        y > _canvasRelativeYMax;
   }
 
   Bar copyWith({
     Color? fill,
     Color? stroke,
     double? width,
-    double? height,
+    double? yMax,
+    double? yMin,
     List<Line>? lines,
     ConstrainedArea? constraints,
   }) =>
@@ -62,7 +76,8 @@ class Bar extends BarPainter {
         fill: fill ?? this.fill,
         stroke: stroke ?? this.stroke,
         width: width ?? this.width,
-        height: height ?? this.height,
+        yMax: yMax ?? this.yMax,
+        yMin: yMin ?? this.yMin,
         lines: lines ?? this.lines,
         constraints: constraints ?? this.constraints,
       );
@@ -78,7 +93,7 @@ class Bar extends BarPainter {
     _yAxisType = yAxisType;
     _maxHeight = maxHeight;
 
-    if (constraints.height <= 0 || constraints.width <= 0) {
+    if (height <= 0 || constraints.height <= 0 || constraints.width <= 0) {
       return;
     }
 
@@ -94,13 +109,14 @@ class Bar extends BarPainter {
         ..style = PaintingStyle.stroke;
     }
 
-    final yMin = calculatedYMin;
+    final yMinCanvas = _canvasRelativeYMin;
+    final yMaxCanvas = _canvasRelativeYMax;
 
     final bar = Rect.fromLTRB(
       constraints.xMin,
-      yMin,
+      yMinCanvas,
       constraints.xMax,
-      constraints.yMax,
+      yMaxCanvas,
     );
 
     canvas.drawRect(bar, fillPaint);
@@ -115,8 +131,8 @@ class Bar extends BarPainter {
           area: ConstrainedArea(
             xMin: constraints.xMin,
             xMax: constraints.xMax,
-            yMin: yMin,
-            yMax: constraints.yMax,
+            yMin: yMinCanvas,
+            yMax: yMaxCanvas,
           ),
         );
       }

@@ -155,7 +155,7 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
         ),
         yAxisType: controller.yAxisType,
         maxHeight: controller.yAxisType == AxisDistanceType.auto
-            ? controller.barHeightMax
+            ? controller.chartMax
             : null,
       );
 
