@@ -19,45 +19,16 @@ class Bar extends BarPainter {
   // EdgeInsets padding = const EdgeInsets.all(0);
   final double yMax;
   final double yMin;
+  late double _canvasRelativeYMin;
+  late double _canvasRelativeYMax;
   List<Line> lines;
-
-  AxisDistanceType _yAxisType = AxisDistanceType.auto;
-  double? _chartUpperBound = 0;
-  double? _chartLowerBound = 0;
 
   @override
   String toString() {
     return 'Bar{fill: $fill, stroke: $stroke, width: $width, yMax: $yMax, constraints: $constraints}';
   }
 
-  double get _canvasRelativeYMin {
-    return _translateToCanvasY(yMax);
-  }
-
-  double get _canvasRelativeYMax {
-    return _translateToCanvasY(yMin);
-  }
-
-  double _translateToCanvasY(double perceivedY) {
-    late final double canvasY;
-    switch (_yAxisType) {
-      case AxisDistanceType.auto:
-        canvasY = (_chartUpperBound! - perceivedY) *
-            (constraints.yMax - constraints.yMin) /
-            (_chartUpperBound! - _chartLowerBound!);
-      case AxisDistanceType.percentage:
-        canvasY = (constraints.height * (1 - perceivedY)) + constraints.yMin;
-      case AxisDistanceType.pixel:
-        canvasY = constraints.yMax - perceivedY;
-    }
-    if (constraints.isOutOfBoundsY(canvasY)) {
-      throw OutOfBoundsException(
-          'Calculated bar height [$canvasY] must be between [${constraints.yMin}] and [${constraints.yMax}]');
-    }
-    return canvasY;
-  }
-
-  double get height => yMax - yMin;
+  double get perceivedHeight => yMax - yMin;
 
   bool isOutOfBounds(double x, double y) {
     return constraints.isOutOfBoundsX(x) ||
@@ -88,16 +59,16 @@ class Bar extends BarPainter {
   void paint(
     Canvas canvas, {
     required ConstrainedArea area,
-    required AxisDistanceType yAxisType,
-    double? chartUpperBound,
-    double? chartLowerBound,
+    required double canvasRelativeYMin,
+    required double canvasRelativeYMax,
   }) {
     super.constraints = area;
-    _yAxisType = yAxisType;
-    _chartUpperBound = chartUpperBound;
-    _chartLowerBound = chartLowerBound;
+    _canvasRelativeYMin = canvasRelativeYMin;
+    _canvasRelativeYMax = canvasRelativeYMax;
 
-    if (height <= 0 || constraints.height <= 0 || constraints.width <= 0) {
+    if (perceivedHeight <= 0 ||
+        constraints.height <= 0 ||
+        constraints.width <= 0) {
       return;
     }
 

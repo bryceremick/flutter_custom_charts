@@ -153,13 +153,22 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yMin: chartConstraints.yMin,
           yMax: chartConstraints.yMax,
         ),
-        yAxisType: controller.yAxisType,
-        chartUpperBound: controller.yAxisType == AxisDistanceType.auto
-            ? controller.chartUpperBound
-            : null,
-        chartLowerBound: controller.yAxisType == AxisDistanceType.auto
-            ? controller.chartLowerBound
-            : null,
+        canvasRelativeYMin: _translateToCanvasPixelY(
+          controller.bars[i].yMax,
+          index: i,
+          yAxisType: controller.yAxisType,
+          chartUpperBound: controller.chartUpperBound,
+          chartLowerBound: controller.chartLowerBound,
+          barConstraints: chartConstraints,
+        ),
+        canvasRelativeYMax: _translateToCanvasPixelY(
+          controller.bars[i].yMin,
+          index: i,
+          yAxisType: controller.yAxisType,
+          chartUpperBound: controller.chartUpperBound,
+          chartLowerBound: controller.chartLowerBound,
+          barConstraints: chartConstraints,
+        ),
       );
 
       // next bar xMin
@@ -197,6 +206,33 @@ double _determineBarWidth(
     case AxisDistanceType.pixel:
       return barWidth!;
   }
+}
+
+double _translateToCanvasPixelY(
+  double perceivedY, {
+  required int index,
+  required AxisDistanceType yAxisType,
+  required double chartUpperBound,
+  required double chartLowerBound,
+  required ConstrainedArea barConstraints,
+}) {
+  late final double canvasPixelY;
+  switch (yAxisType) {
+    case AxisDistanceType.auto:
+      canvasPixelY = (chartUpperBound - perceivedY) *
+          (barConstraints.yMax - barConstraints.yMin) /
+          (chartUpperBound - chartLowerBound);
+    case AxisDistanceType.percentage:
+      canvasPixelY =
+          (barConstraints.height * (1 - perceivedY)) + barConstraints.yMin;
+    case AxisDistanceType.pixel:
+      canvasPixelY = barConstraints.yMax - perceivedY;
+  }
+  if (barConstraints.isOutOfBoundsY(canvasPixelY)) {
+    throw OutOfBoundsException(
+        'Bar[$index]: translated y value [$canvasPixelY] must be between [${barConstraints.yMin}] and [${barConstraints.yMax}]');
+  }
+  return canvasPixelY;
 }
 
 double? _nextScrollOffset(

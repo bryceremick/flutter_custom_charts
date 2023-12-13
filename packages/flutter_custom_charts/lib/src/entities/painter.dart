@@ -29,9 +29,8 @@ abstract class BarPainter implements ConstrainedPainter {
   void paint(
     Canvas canvas, {
     required ConstrainedArea area,
-    required AxisDistanceType yAxisType,
-    double? chartUpperBound,
-    double? chartLowerBound,
+    required double canvasRelativeYMin,
+    required double canvasRelativeYMax,
   }) {
     constraints = area;
   }
