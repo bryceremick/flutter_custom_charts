@@ -1,5 +1,7 @@
 part of flutter_custom_charts;
 
+const _tolerance = 0.0001;
+
 class ConstrainedArea {
   const ConstrainedArea({
     required this.xMin,
@@ -23,10 +25,14 @@ class ConstrainedArea {
   double get height => yMax - yMin;
   Size get size => Size(width, height);
 
-  bool isOutOfBoundsY(double y) => y < yMin || y > yMax;
-  bool isOutOfBoundsX(double x) => x < xMin || x > xMax;
+  bool isOutOfBoundsY(double y) =>
+      y < yMin - _tolerance || y > yMax + _tolerance;
+  bool isOutOfBoundsX(double x) =>
+      x < xMin - _tolerance || x > xMax + _tolerance;
+
   bool isOutOfBounds(double x, double y) =>
       isOutOfBoundsX(x) || isOutOfBoundsY(y);
+
   ConstrainedArea shrink(EdgeInsets padding) => ConstrainedArea(
         xMin: xMin + padding.left,
         xMax: xMax - padding.right,

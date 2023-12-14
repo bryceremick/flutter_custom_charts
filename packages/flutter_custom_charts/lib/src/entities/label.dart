@@ -46,7 +46,7 @@ class Label extends LabelPainter {
       // vertical bottom alignment
       y = constraints.yMax - textPainter.height;
     }
-    print('x: $x, y: $y');
+
     textPainter.paint(canvas, Offset(x, y));
   }
 }

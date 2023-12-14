@@ -73,15 +73,16 @@ class _MyHomePageState extends State<MyHomePage> {
     xAxisType: AxisDistanceType.auto,
     yAxisType: AxisDistanceType.auto,
     // padding: const EdgeInsets.all(20)
-    // lines: [
-    //   HorizontalLine(
-    //     fill: Colors.white,
-    //     dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
-    //     width:
-    //         const LineDimension(mode: LineConstraintMode.percentage, value: 1),
-    //     height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
-    //   ),
-    // ],
+    lines: [
+      HorizontalLine(
+        fill: Colors.white,
+        dy: const LineDimension(mode: LineConstraintMode.percentage, value: .5),
+        width:
+            const LineDimension(mode: LineConstraintMode.percentage, value: 1),
+        height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+        style: const Dashed(),
+      ),
+    ],
   );
 
   final percentageWidthController = BarChartController(
@@ -134,8 +135,14 @@ class _MyHomePageState extends State<MyHomePage> {
       (index) => Bar(
         fill: primaryFill,
         stroke: stroke,
-        yMax: 0.5,
+        yMax: rng.nextDouble(),
         width: 200,
+        label: Label(
+          text: 'Bar ${index + 1}',
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+          alignment: Alignment.center,
+          // padding: const EdgeInsets.only(bottom: 5),
+        ),
         lines: [
           HorizontalLine(
             fill: Colors.white,
@@ -151,8 +158,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ),
     xAxisType: AxisDistanceType.pixel,
-    yAxisType: AxisDistanceType.percentage,
-    // padding: const EdgeInsets.all(15),
+    yAxisType: AxisDistanceType.auto,
+    padding: const EdgeInsets.all(40),
     lines: [
       HorizontalLine(
         fill: Colors.white,
@@ -164,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ],
   );
 
-  BarChartController<Bar> get controller => autoWidthController;
+  BarChartController<Bar> get controller => pixelWidthController;
 
   @override
   Widget build(BuildContext context) {
