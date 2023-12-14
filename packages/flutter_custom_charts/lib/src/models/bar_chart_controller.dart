@@ -6,7 +6,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     List<Line> lines = const [],
     AxisDistanceType xAxisType = AxisDistanceType.auto,
     AxisDistanceType yAxisType = AxisDistanceType.auto,
-    EdgeInsets padding = const EdgeInsets.all(0),
+    EdgeInsets padding = const EdgeInsets.only(bottom: 40),
     double gap = 15,
     double? explicitChartMax,
     double? explicitChartMin,

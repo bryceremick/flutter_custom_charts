@@ -27,6 +27,12 @@ class ConstrainedArea {
   bool isOutOfBoundsX(double x) => x < xMin || x > xMax;
   bool isOutOfBounds(double x, double y) =>
       isOutOfBoundsX(x) || isOutOfBoundsY(y);
+  ConstrainedArea shrink(EdgeInsets padding) => ConstrainedArea(
+        xMin: xMin + padding.left,
+        xMax: xMax - padding.right,
+        yMin: yMin + padding.top,
+        yMax: yMax - padding.bottom,
+      );
 
   @override
   String toString() {

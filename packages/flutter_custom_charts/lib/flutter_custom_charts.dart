@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 part 'src/charts/bar_chart.dart';
 part 'src/entities/bar.dart';
+part 'src/entities/label.dart';
 // part 'src/entities/cube.dart';
 part 'src/entities/line.dart';
 part 'src/entities/painter.dart';

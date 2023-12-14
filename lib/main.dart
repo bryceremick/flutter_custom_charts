@@ -50,22 +50,28 @@ class _MyHomePageState extends State<MyHomePage> {
         fill: primaryFill,
         stroke: stroke,
         yMax: rng.nextDouble(),
-        lines: [
-          HorizontalLine(
-            fill: Colors.white,
-            dy: const LineDimension(
-                mode: LineConstraintMode.percentage, value: 0.5),
-            width: const LineDimension(
-                mode: LineConstraintMode.percentage, value: 1),
-            height:
-                const LineDimension(mode: LineConstraintMode.pixel, value: 1),
-            style: const Dashed(),
-          ),
-        ],
+        label: Label(
+          text: 'Bar ${index + 1}',
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+          alignment: Alignment.center,
+          // padding: const EdgeInsets.only(bottom: 5),
+        ),
+        // lines: [
+        //   HorizontalLine(
+        //     fill: Colors.white,
+        //     dy: const LineDimension(
+        //         mode: LineConstraintMode.percentage, value: 0.5),
+        //     width: const LineDimension(
+        //         mode: LineConstraintMode.percentage, value: 1),
+        //     height:
+        //         const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+        //     style: const Dashed(),
+        //   ),
+        // ],
       ),
     ),
     xAxisType: AxisDistanceType.auto,
-    yAxisType: AxisDistanceType.percentage,
+    yAxisType: AxisDistanceType.auto,
     // padding: const EdgeInsets.all(20)
     // lines: [
     //   HorizontalLine(
@@ -158,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ],
   );
 
-  BarChartController<Bar> get controller => percentageWidthController;
+  BarChartController<Bar> get controller => autoWidthController;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ),
       body: Center(
         child: SizedBox(
-          height: 200,
+          height: 400,
           child: BarChart(
             controller: controller,
             onTap: (index, cube) {

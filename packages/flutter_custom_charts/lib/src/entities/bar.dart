@@ -15,7 +15,7 @@ class Bar extends BarPainter {
   final Color fill;
   final Color? stroke;
   double? width;
-  String? label;
+  Label? label;
   EdgeInsets padding = const EdgeInsets.all(0);
   final double yMax;
   final double yMin;

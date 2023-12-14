@@ -56,3 +56,24 @@ abstract class LinePainter implements ConstrainedPainter {
     constraints = area;
   }
 }
+
+abstract class LabelPainter implements ConstrainedPainter {
+  LabelPainter({
+    this.constraints = const ConstrainedArea(
+      xMin: 0,
+      xMax: 0,
+      yMin: 0,
+      yMax: 0,
+    ),
+  });
+
+  @override
+  ConstrainedArea constraints;
+
+  void paint(
+    Canvas canvas, {
+    required ConstrainedArea area,
+  }) {
+    constraints = area;
+  }
+}

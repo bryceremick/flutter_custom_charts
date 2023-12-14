@@ -171,6 +171,18 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
         ),
       );
 
+      if (controller.bars[i].label != null) {
+        controller.bars[i].label!.paint(
+          canvas,
+          area: ConstrainedArea(
+            xMin: dx,
+            xMax: xMaxBar,
+            yMin: chartConstraints.yMax,
+            yMax: chartConstraints.yMax + controller.padding.bottom,
+          ),
+        );
+      }
+
       // next bar xMin
       dx += barWidth + controller.gap;
     }
