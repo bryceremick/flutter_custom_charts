@@ -3,6 +3,10 @@ part of flutter_custom_charts;
 const double _degredationFactor = 0.85;
 const int _tweenTickTime = 2;
 
+// This is the number of bars that get painted outside of the visible area
+// on both sides of the chart. This is to give the chart a "scrolling" effect
+const int _horizonatalBarScrollPadding = 5;
+
 class BarChart<T extends Bar> extends StatefulWidget {
   const BarChart({
     super.key,
@@ -127,22 +131,43 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
     final totalAvailableBarSpace = (chartConstraints.width -
         ((controller.bars.length - 1) * controller.gap));
 
+    final barWidth = _determineBarWidth(
+      controller.xAxisType,
+      totalAvailableBarSpace,
+      controller.bars.length,
+      controller.bars[0].width,
+    );
+
     canvas.translate(controller.xScrollOffset, 0);
 
-    double dx = chartConstraints.xMin;
-    for (int i = 0; i < controller.bars.length; i++) {
-      final barWidth = _determineBarWidth(
-        controller.xAxisType,
-        totalAvailableBarSpace,
-        controller.bars.length,
-        controller.bars[i].width,
-      );
+    final visibleXMin = -controller.xScrollOffset + chartConstraints.xMin;
+    final visibleXMax = -controller.xScrollOffset + chartConstraints.xMax;
 
+    final totalBarWidth = barWidth + controller.gap;
+    int firstVisibleBarIndex = max(
+        ((visibleXMin / totalBarWidth).floor()) - _horizonatalBarScrollPadding,
+        0);
+
+    int lastVisibleBarIndex = min(
+        ((visibleXMax / totalBarWidth).ceil()) + _horizonatalBarScrollPadding,
+        controller.bars.length - 1);
+
+    // start painting  at first "visible" bar
+    double dx = chartConstraints.xMin + firstVisibleBarIndex * totalBarWidth;
+
+    for (int i = firstVisibleBarIndex; i < lastVisibleBarIndex; i++) {
       final xMaxBar = (dx + barWidth).roundToDouble();
       if (xMaxBar > chartConstraints.xMax &&
           controller.xAxisType != AxisDistanceType.pixel) {
         throw OutOfBoundsException(
             'Cannot paint bar[$i] with width [$barWidth] because it exceeds the chart xMax constraint [${chartConstraints.xMax}]');
+      }
+
+      double dy = controller.bars[i].yMax;
+      if (controller.barAnimation != null &&
+          controller.barAnimation!.isAnimating) {
+        dy = (controller.bars[i].yMax - controller.bars[i].yMin) *
+            controller.barAnimation!.value;
       }
 
       controller.bars[i].paint(
@@ -154,7 +179,7 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yMax: chartConstraints.yMax,
         ),
         canvasRelativeYMin: _translateToCanvasPixelY(
-          controller.bars[i].yMax,
+          dy,
           index: i,
           yAxisType: controller.yAxisType,
           chartUpperBound: controller.chartUpperBound,

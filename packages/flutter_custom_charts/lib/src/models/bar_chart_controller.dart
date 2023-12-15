@@ -1,6 +1,7 @@
 part of flutter_custom_charts;
 
-class BarChartController<T extends Bar> extends ChangeNotifier {
+class BarChartController<T extends Bar> extends ChangeNotifier
+    implements TickerProvider {
   BarChartController({
     required List<T> bars,
     List<Line> lines = const [],
@@ -10,6 +11,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     double gap = 15,
     double? explicitChartMax,
     double? explicitChartMin,
+    AnimationDetails? barAnimationDetails,
   }) {
     _bars = bars;
     _gap = gap;
@@ -19,8 +21,21 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
     _padding = padding;
     _explicitChartMax = explicitChartMax;
     _explicitChartMin = explicitChartMin;
+
+    if (barAnimationDetails != null) {
+      barAnimation = ChartAnimation(
+        controller: AnimationController(
+          vsync: this,
+          duration: barAnimationDetails.duration,
+        ),
+        curve: barAnimationDetails.curve,
+        onUpdate: (value) => notifyListeners(),
+      );
+      barAnimation!.start();
+    }
   }
 
+  ChartAnimation? barAnimation;
   late AxisDistanceType _xAxisType;
   late AxisDistanceType _yAxisType;
   double? _explicitChartMax;
@@ -56,6 +71,11 @@ class BarChartController<T extends Bar> extends ChangeNotifier {
   double get chartLowerBound => explicitChartMin != null
       ? min(explicitChartMin!, implicitChartMin)
       : implicitChartMin;
+
+  @override
+  Ticker createTicker(TickerCallback onTick) {
+    return Ticker(onTick);
+  }
 
   set bars(List<T> bars) {
     _bars = bars;

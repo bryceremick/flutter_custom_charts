@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
       (index) => Bar(
         fill: primaryFill,
         stroke: stroke,
-        yMax: rng.nextDouble(),
+        yMax: rng.nextInt(10).toDouble() + 2,
         label: Label(
           text: 'Bar ${index + 1}',
           style: const TextStyle(fontSize: 12, color: Colors.white),
@@ -131,14 +131,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final pixelWidthController = BarChartController(
     bars: List.generate(
-      20,
+      2000,
       (index) => Bar(
         fill: primaryFill,
         stroke: stroke,
-        yMax: rng.nextDouble(),
+        yMax: rng.nextInt(10).toDouble() + 2,
         width: 200,
         label: Label(
-          text: 'Bar ${index + 1}',
+          text: 'Bar $index',
           style: const TextStyle(fontSize: 12, color: Colors.white),
           alignment: Alignment.center,
           // padding: const EdgeInsets.only(bottom: 5),
@@ -157,6 +157,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     ),
+    // barAnimationDetails: const AnimationDetails(
+    //   duration: Duration(seconds: 1),
+    //   curve: Curves.easeOut,
+    // ),
     xAxisType: AxisDistanceType.pixel,
     yAxisType: AxisDistanceType.auto,
     padding: const EdgeInsets.all(40),
