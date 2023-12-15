@@ -19,9 +19,13 @@ class ChartAnimation {
   final Curve curve;
   late final AnimationController _controller;
   late final Animation<double> _tween;
-  late final void Function(double value) _onUpdate;
+  late void Function(double value) _onUpdate;
   double get value => _tween.value;
   bool get isAnimating => _controller.isAnimating;
+
+  set onUpdate(void Function(double value) onUpdate) {
+    _onUpdate = onUpdate;
+  }
 
   void start({bool isForward = true}) {
     _controller.reset();

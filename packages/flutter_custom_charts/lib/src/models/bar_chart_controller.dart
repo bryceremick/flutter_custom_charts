@@ -1,5 +1,16 @@
 part of flutter_custom_charts;
 
+class _BarMetrics {
+  _BarMetrics({
+    required this.totalWidth,
+    required this.yMax,
+    required this.yMin,
+  });
+  final double totalWidth;
+  final double yMax;
+  final double yMin;
+}
+
 class BarChartController<T extends Bar> extends ChangeNotifier
     implements TickerProvider {
   BarChartController({
@@ -21,6 +32,16 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     _padding = padding;
     _explicitChartMax = explicitChartMax;
     _explicitChartMin = explicitChartMin;
+    _calculateBarMetrics(bars);
+
+    _scrollAnimation = ChartAnimation(
+      controller: AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 1),
+      ),
+      curve: Curves.linear,
+      onUpdate: (value) {},
+    );
 
     if (barAnimationDetails != null) {
       barAnimation = ChartAnimation(
@@ -36,6 +57,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   }
 
   ChartAnimation? barAnimation;
+  late final ChartAnimation _scrollAnimation;
   late AxisDistanceType _xAxisType;
   late AxisDistanceType _yAxisType;
   double? _explicitChartMax;
@@ -47,6 +69,10 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   double _xScrollOffset = 0;
   ConstrainedArea chartConstraints = const ConstrainedArea.empty();
 
+  double _totalBarsWidth = 0;
+  double _implicitChartMax = 0;
+  double _implicitChartMin = 0;
+
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
   double get gap => _gap;
@@ -54,31 +80,82 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   AxisDistanceType get yAxisType => _yAxisType;
   EdgeInsets get padding => _padding;
   double get xScrollOffset => _xScrollOffset;
+  ChartAnimation get scrollAnimation => _scrollAnimation;
 
   double get xScrollOffsetMax =>
-      (((totalBarsWidth + (gap * (bars.length - 1))) * -1) +
+      (((_totalBarsWidth + (gap * (bars.length - 1))) * -1) +
           chartConstraints.width);
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
-  double get totalBarsWidth =>
-      bars.map((e) => e.width!).reduce((value, element) => value + element);
-  double get implicitChartMax => bars.map((e) => e.yMax).reduce(max);
-  double get implicitChartMin => bars.map((e) => e.yMin).reduce(min);
+  double get implicitChartMax => _implicitChartMax;
+  double get implicitChartMin => _implicitChartMin;
   double? get explicitChartMax => _explicitChartMax;
   double? get explicitChartMin => _explicitChartMin;
+
   double get chartUpperBound => explicitChartMax != null
-      ? max(explicitChartMax!, implicitChartMax)
-      : implicitChartMax;
+      ? max(_explicitChartMax!, _implicitChartMax)
+      : _implicitChartMax;
   double get chartLowerBound => explicitChartMin != null
-      ? min(explicitChartMin!, implicitChartMin)
-      : implicitChartMin;
+      ? min(_explicitChartMin!, _implicitChartMin)
+      : _implicitChartMin;
 
   @override
   Ticker createTicker(TickerCallback onTick) {
     return Ticker(onTick);
   }
 
+  void _calculateBarMetrics(
+    List<T> bars, {
+    bool isRemoved = false,
+    bool shouldReset = false,
+  }) {
+    if (shouldReset) {
+      _resetBarMetrics();
+    }
+
+    final metrics = _reduceBarMetrics(bars);
+    if (!isRemoved) {
+      _totalBarsWidth += metrics.totalWidth;
+      _implicitChartMax = max(_implicitChartMax, metrics.yMax);
+      _implicitChartMin = min(_implicitChartMin, metrics.yMin);
+    } else {
+      _totalBarsWidth -= metrics.totalWidth;
+      if (metrics.yMax == _implicitChartMax) {
+        _implicitChartMax = _bars.map((e) => e.yMax).reduce(max);
+      }
+      if (metrics.yMin == _implicitChartMin) {
+        _implicitChartMin = _bars.map((e) => e.yMin).reduce(min);
+      }
+    }
+  }
+
+  _BarMetrics _reduceBarMetrics(List<T> bars) {
+    if (bars.isEmpty) {
+      return _BarMetrics(
+        totalWidth: 0,
+        yMax: 0,
+        yMin: 0,
+      );
+    }
+
+    return _BarMetrics(
+      totalWidth: bars
+          .map((e) => e.width ?? 0)
+          .reduce((value, element) => value + element),
+      yMax: bars.map((e) => e.yMax).reduce(max),
+      yMin: bars.map((e) => e.yMin).reduce(min),
+    );
+  }
+
+  void _resetBarMetrics() {
+    _bars = [];
+    _totalBarsWidth = 0;
+    _implicitChartMax = 0;
+    _implicitChartMin = 0;
+  }
+
   set bars(List<T> bars) {
     _bars = bars;
+    _calculateBarMetrics(bars, shouldReset: true);
     notifyListeners();
   }
 
@@ -124,26 +201,32 @@ class BarChartController<T extends Bar> extends ChangeNotifier
 
   void add(T newBar) {
     _bars.add(newBar);
+    _calculateBarMetrics([newBar]);
     notifyListeners();
   }
 
   void addAll(List<T> newBars) {
     _bars.addAll(newBars);
+    _calculateBarMetrics(newBars);
     notifyListeners();
   }
 
   void insert(int index, T newBar) {
     _bars.insert(index, newBar);
+    _calculateBarMetrics([newBar]);
     notifyListeners();
   }
 
   void remove(int index) {
-    _bars.removeAt(index);
+    final bar = _bars.removeAt(index);
+    _calculateBarMetrics([bar], isRemoved: true);
     notifyListeners();
   }
 
   void replace(int index, T newBar) {
     _bars[index] = newBar;
+    _calculateBarMetrics([newBar], isRemoved: true);
+    _calculateBarMetrics([newBar]);
     notifyListeners();
   }
 
@@ -160,6 +243,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
 
   void clear() {
     _bars.clear();
+    _resetBarMetrics();
     notifyListeners();
   }
 

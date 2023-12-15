@@ -5,7 +5,10 @@ const int _tweenTickTime = 2;
 
 // This is the number of bars that get painted outside of the visible area
 // on both sides of the chart. This is to give the chart a "scrolling" effect
-const int _horizonatalBarScrollPadding = 5;
+const int _horizontalBarScrollPadding = 2;
+
+// TODO - account for bars with different widths
+// TODO - pass in the tween value and have the bar animate itself?
 
 class BarChart<T extends Bar> extends StatefulWidget {
   const BarChart({
@@ -22,7 +25,6 @@ class BarChart<T extends Bar> extends StatefulWidget {
 }
 
 class _BarChartState<T extends Bar> extends State<BarChart<T>> {
-  Timer? _tweenTimer;
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -60,27 +62,22 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
             }
           },
           onHorizontalDragStart: (details) {
-            _tweenTimer?.cancel();
-            _tweenTimer = null;
+            widget.controller.scrollAnimation.stop();
           },
           onHorizontalDragEnd: (details) {
-            _tweenTimer?.cancel();
             double velocity = details.velocity.pixelsPerSecond.dx / 50;
-            int elapsedTime = 0;
-            _tweenTimer = Timer.periodic(
-                const Duration(milliseconds: _tweenTickTime), (timer) {
-              elapsedTime += _tweenTickTime;
-              velocity *= max(_degredationFactor - elapsedTime / 10000, 0.5);
-
+            widget.controller.scrollAnimation.onUpdate = (tweenedValue) {
+              velocity *= max(_degredationFactor - tweenedValue / 10000, 0.5);
               final offset = widget.controller.xScrollOffset + velocity;
               if (offset < 0 && offset > widget.controller.xScrollOffsetMax) {
                 widget.controller.xScrollOffset = offset;
               }
 
-              if (velocity.abs() < 0.01) {
-                timer.cancel();
+              if (velocity.abs() < 0.2) {
+                widget.controller.scrollAnimation.stop();
               }
-            });
+            };
+            widget.controller.scrollAnimation.start();
           },
           child: Listener(
             onPointerSignal: (PointerSignalEvent event) {
@@ -145,16 +142,14 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
 
     final totalBarWidth = barWidth + controller.gap;
     int firstVisibleBarIndex = max(
-        ((visibleXMin / totalBarWidth).floor()) - _horizonatalBarScrollPadding,
+        ((visibleXMin / totalBarWidth).floor()) - _horizontalBarScrollPadding,
         0);
 
     int lastVisibleBarIndex = min(
-        ((visibleXMax / totalBarWidth).ceil()) + _horizonatalBarScrollPadding,
+        ((visibleXMax / totalBarWidth).ceil()) + _horizontalBarScrollPadding,
         controller.bars.length - 1);
 
-    // start painting  at first "visible" bar
     double dx = chartConstraints.xMin + firstVisibleBarIndex * totalBarWidth;
-
     for (int i = firstVisibleBarIndex; i < lastVisibleBarIndex; i++) {
       final xMaxBar = (dx + barWidth).roundToDouble();
       if (xMaxBar > chartConstraints.xMax &&
