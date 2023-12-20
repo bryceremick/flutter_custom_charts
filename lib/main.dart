@@ -131,30 +131,30 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final pixelWidthController = BarChartController(
     bars: List.generate(
-      2000,
+      10000,
       (index) => Bar(
         fill: primaryFill,
-        stroke: stroke,
+        // stroke: stroke,
         yMax: rng.nextInt(10).toDouble() + 2,
-        width: 2,
+        width: rng.nextInt(50).toDouble() + 2,
         // label: Label(
-        //   text: 'Bar $index',
+        //   text: '$index',
         //   style: const TextStyle(fontSize: 12, color: Colors.white),
         //   alignment: Alignment.center,
         //   // padding: const EdgeInsets.only(bottom: 5),
         // ),
-        lines: [
-          HorizontalLine(
-            fill: Colors.white,
-            dy: const LineDimension(
-                mode: LineConstraintMode.percentage, value: 0.5),
-            width: const LineDimension(
-                mode: LineConstraintMode.percentage, value: 1),
-            height:
-                const LineDimension(mode: LineConstraintMode.pixel, value: 1),
-            style: const Dashed(),
-          ),
-        ],
+        // lines: [
+        //   HorizontalLine(
+        //     fill: Colors.white,
+        //     dy: const LineDimension(
+        //         mode: LineConstraintMode.percentage, value: 0.5),
+        //     width: const LineDimension(
+        //         mode: LineConstraintMode.percentage, value: 1),
+        //     height:
+        //         const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+        //     style: const Dashed(),
+        //   ),
+        // ],
       ),
     ),
     barAnimationDetails: const AnimationDetails(
@@ -163,17 +163,17 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
     xAxisType: AxisDistanceType.pixel,
     yAxisType: AxisDistanceType.auto,
-    padding: const EdgeInsets.all(40),
-    gap: 2,
-    lines: [
-      HorizontalLine(
-        fill: Colors.white,
-        dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
-        width:
-            const LineDimension(mode: LineConstraintMode.percentage, value: 1),
-        height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
-      ),
-    ],
+    padding: const EdgeInsets.only(left: 80, right: 80, bottom: 40),
+    gap: 1,
+    // lines: [
+    //   HorizontalLine(
+    //     fill: Colors.white,
+    //     dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
+    //     width:
+    //         const LineDimension(mode: LineConstraintMode.percentage, value: 1),
+    //     height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+    //   ),
+    // ],
   );
 
   BarChartController<Bar> get controller => pixelWidthController;
@@ -198,7 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     fill: stroke,
                     // secondaryFill: stroke,
                     // tertiaryFill: stroke,
-                    stroke: primaryFill,
+                    // stroke: primaryFill,
                   ),
                 );
               } else {
@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     fill: primaryFill,
                     // secondaryFill: secondaryFill,
                     // tertiaryFill: tertiaryFill,
-                    stroke: stroke,
+                    // stroke: stroke,
                   ),
                 );
               }

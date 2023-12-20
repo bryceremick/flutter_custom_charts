@@ -44,4 +44,33 @@ class ConstrainedArea {
   String toString() {
     return 'ConstrainedArea(xMin: $xMin, xMax: $xMax, yMin: $yMin, yMax: $yMax)';
   }
+
+  @override
+  bool operator ==(covariant ConstrainedArea other) {
+    if (identical(this, other)) return true;
+
+    return other.xMin == xMin &&
+        other.xMax == xMax &&
+        other.yMin == yMin &&
+        other.yMax == yMax;
+  }
+
+  @override
+  int get hashCode {
+    return xMin.hashCode ^ xMax.hashCode ^ yMin.hashCode ^ yMax.hashCode;
+  }
+
+  ConstrainedArea copyWith({
+    double? xMin,
+    double? xMax,
+    double? yMin,
+    double? yMax,
+  }) {
+    return ConstrainedArea(
+      xMin: xMin ?? this.xMin,
+      xMax: xMax ?? this.xMax,
+      yMin: yMin ?? this.yMin,
+      yMax: yMax ?? this.yMax,
+    );
+  }
 }

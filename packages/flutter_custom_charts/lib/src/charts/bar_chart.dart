@@ -3,10 +3,6 @@ part of flutter_custom_charts;
 const double _degredationFactor = 0.85;
 const int _tweenTickTime = 2;
 
-// This is the number of bars that get painted outside of the visible area
-// on both sides of the chart. This is to give the chart a "scrolling" effect
-const int _horizontalBarScrollPadding = 2;
-
 // TODO - account for bars with different widths
 // TODO - pass in the tween value and have the bar animate itself?
 
@@ -111,67 +107,75 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
 
   final BarChartController<T> controller;
 
+  void _paintYAxes(
+    Canvas canvas,
+    Size size,
+    ConstrainedArea translation,
+    ConstrainedArea constraints,
+  ) {
+    final fillPaint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+
+    final leftAxis = Rect.fromLTWH(
+      translation.xMin,
+      0,
+      controller.padding.left,
+      size.height,
+    );
+
+    final rightAxis = Rect.fromLTWH(
+      translation.xMin + constraints.xMax,
+      0,
+      controller.padding.right,
+      size.height,
+    );
+
+    canvas.drawRect(leftAxis, fillPaint);
+    canvas.drawRect(rightAxis, fillPaint);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     // debugPrint('PAINTING');
     if (controller.bars.isEmpty) return;
 
-    final chartConstraints = ConstrainedArea(
+    final constraints = ConstrainedArea(
       xMin: 0 + controller.padding.left,
       xMax: size.width - controller.padding.right,
       yMin: 0 + controller.padding.top,
       yMax: size.height - controller.padding.bottom,
     );
+    controller.chartConstraints = constraints;
 
-    controller.chartConstraints = chartConstraints;
+    final translation = controller.currentTranslation;
+    canvas.translate(-translation.xMin, 0);
+    // final (firstIndex, lastIndex) = controller.firstAndLastPaintedBarIndexes;
 
-    final totalAvailableBarSpace = (chartConstraints.width -
-        ((controller.bars.length - 1) * controller.gap));
+    _paintYAxes(canvas, size, translation, constraints);
 
-    final barWidth = _determineBarWidth(
-      controller.xAxisType,
-      totalAvailableBarSpace,
-      controller.bars.length,
-      controller.bars[0].width,
-    );
+    // double dx = constraints.xMin + firstIndex * controller.totalBarWidthPixels;
+    int i = controller.firstPaintedBarIndex;
+    T bar = controller.bars[i];
+    while (bar.constraints.xMin <= translation.xMax + constraints.xMin) {
+      // final xMaxBar = (dx + controller.barWidthPixels).roundToDouble();
+      // if (xMaxBar > constraints.xMax &&
+      //     controller.xAxisType != AxisDistanceType.pixel) {
+      //   throw OutOfBoundsException(
+      //       'Cannot paint bar[$i] with width [${controller.barWidthPixels}] because it exceeds the chart xMax constraint [${constraints.xMax}]');
+      // }
 
-    canvas.translate(controller.xScrollOffset, 0);
-
-    final visibleXMin = -controller.xScrollOffset + chartConstraints.xMin;
-    final visibleXMax = -controller.xScrollOffset + chartConstraints.xMax;
-
-    final totalBarWidth = barWidth + controller.gap;
-    int firstVisibleBarIndex = max(
-        ((visibleXMin / totalBarWidth).floor()) - _horizontalBarScrollPadding,
-        0);
-
-    int lastVisibleBarIndex = min(
-        ((visibleXMax / totalBarWidth).ceil()) + _horizontalBarScrollPadding,
-        controller.bars.length - 1);
-
-    double dx = chartConstraints.xMin + firstVisibleBarIndex * totalBarWidth;
-    for (int i = firstVisibleBarIndex; i < lastVisibleBarIndex; i++) {
-      final xMaxBar = (dx + barWidth).roundToDouble();
-      if (xMaxBar > chartConstraints.xMax &&
-          controller.xAxisType != AxisDistanceType.pixel) {
-        throw OutOfBoundsException(
-            'Cannot paint bar[$i] with width [$barWidth] because it exceeds the chart xMax constraint [${chartConstraints.xMax}]');
-      }
-
-      double dy = controller.bars[i].yMax;
+      double dy = bar.yMax;
       if (controller.barAnimation != null &&
           controller.barAnimation!.isAnimating) {
-        dy = (controller.bars[i].yMax - controller.bars[i].yMin) *
-            controller.barAnimation!.value;
+        dy = (bar.yMax - bar.yMin) * controller.barAnimation!.value;
       }
 
-      controller.bars[i].paint(
+      bar.paint(
         canvas,
-        area: ConstrainedArea(
-          xMin: dx,
-          xMax: xMaxBar,
-          yMin: chartConstraints.yMin,
-          yMax: chartConstraints.yMax,
+        area: bar.constraints.copyWith(
+          yMin: constraints.yMin,
+          yMax: constraints.yMax,
         ),
         canvasRelativeYMin: _translateToCanvasPixelY(
           dy,
@@ -179,7 +183,7 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yAxisType: controller.yAxisType,
           chartUpperBound: controller.chartUpperBound,
           chartLowerBound: controller.chartLowerBound,
-          constraints: chartConstraints,
+          constraints: constraints,
         ),
         canvasRelativeYMax: _translateToCanvasPixelY(
           controller.bars[i].yMin,
@@ -187,37 +191,39 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
           yAxisType: controller.yAxisType,
           chartUpperBound: controller.chartUpperBound,
           chartLowerBound: controller.chartLowerBound,
-          constraints: chartConstraints,
+          constraints: constraints,
         ),
       );
 
-      if (controller.bars[i].label != null) {
-        controller.bars[i].label!.paint(
+      if (bar.label != null) {
+        bar.label!.paint(
           canvas,
-          area: ConstrainedArea(
-            xMin: dx,
-            xMax: xMaxBar,
-            yMin: chartConstraints.yMax,
-            yMax: chartConstraints.yMax + controller.padding.bottom,
+          area: bar.constraints.copyWith(
+            yMin: constraints.yMax,
+            yMax: constraints.yMax + controller.padding.bottom,
           ),
         );
       }
 
-      // next bar xMin
-      dx += barWidth + controller.gap;
+      bar = controller.bars[++i];
     }
+
+    // print(controller.firstVisibleBarIndex);
+    // print(controller._maxIterations);
 
     if (controller.lines.isNotEmpty) {
       for (final line in controller.lines) {
         line.paint(canvas,
             area: ConstrainedArea(
-              xMin: chartConstraints.xMin - controller.xScrollOffset,
-              xMax: chartConstraints.xMax - controller.xScrollOffset,
-              yMin: chartConstraints.yMin,
-              yMax: chartConstraints.yMax,
+              xMin: constraints.xMin - controller.xScrollOffset,
+              xMax: constraints.xMax - controller.xScrollOffset,
+              yMin: constraints.yMin,
+              yMax: constraints.yMax,
             ));
       }
     }
+
+    print('----------------');
   }
 
   @override

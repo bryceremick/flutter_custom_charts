@@ -1,5 +1,9 @@
 part of flutter_custom_charts;
 
+// This is the number of bars that get painted outside of the visible area
+// on both sides of the chart. This is to give the chart a "scrolling" effect
+const int _horizontalBarScrollPadding = 1;
+
 class _BarMetrics {
   _BarMetrics({
     required this.totalWidth,
@@ -32,6 +36,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     _padding = padding;
     _explicitChartMax = explicitChartMax;
     _explicitChartMin = explicitChartMin;
+    _chartConstraints = const ConstrainedArea.empty();
     _calculateBarMetrics(bars);
 
     _scrollAnimation = ChartAnimation(
@@ -67,11 +72,12 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   late List<Line> _lines;
   late EdgeInsets _padding;
   double _xScrollOffset = 0;
-  ConstrainedArea chartConstraints = const ConstrainedArea.empty();
+  late ConstrainedArea _chartConstraints;
 
   double _totalBarsWidth = 0;
   double _implicitChartMax = 0;
   double _implicitChartMin = 0;
+  double _barWidthPixels = 0;
 
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
@@ -82,9 +88,23 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   double get xScrollOffset => _xScrollOffset;
   ChartAnimation get scrollAnimation => _scrollAnimation;
 
+  ConstrainedArea get chartConstraints => _chartConstraints;
+  ConstrainedArea get currentTranslation {
+    return ConstrainedArea(
+      xMin: -_xScrollOffset,
+      xMax: -_xScrollOffset + _chartConstraints.width,
+      yMin: chartConstraints.yMin,
+      yMax: chartConstraints.yMax,
+    );
+  }
+
+  double get totalAvailableBarSpace =>
+      (_chartConstraints.width - ((_bars.length - 1) * _gap));
+  double get barWidthPixels => _barWidthPixels;
+  double get totalBarWidthPixels => _barWidthPixels + _gap;
   double get xScrollOffsetMax =>
       (((_totalBarsWidth + (gap * (bars.length - 1))) * -1) +
-          chartConstraints.width);
+          _chartConstraints.width);
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
   double get implicitChartMax => _implicitChartMax;
   double get implicitChartMin => _implicitChartMin;
@@ -197,6 +217,81 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   set explicitChartMin(double? explicitChartMin) {
     _explicitChartMin = explicitChartMin;
     notifyListeners();
+  }
+
+  set chartConstraints(ConstrainedArea constraints) {
+    if (constraints == _chartConstraints) {
+      return;
+    }
+    _chartConstraints = constraints;
+    _setBarConstraints();
+  }
+
+  int get firstPaintedBarIndex {
+    // binary search
+    int left = 0;
+    int right = _bars.length - 1;
+    final x = -xScrollOffset + chartConstraints.xMin;
+    int i = 0;
+
+    while (left <= right) {
+      i++;
+      int mid = left + ((right - left) >> 1);
+      double xMin = _bars[mid].constraints.xMin;
+      double xMax = _bars[mid].constraints.xMax + _gap;
+
+      if (xMin <= x && x <= xMax) {
+        print('iterations: $i');
+        return mid;
+      } else if (x < xMin) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    }
+
+    throw BarChartException('Could not find first painted bar index');
+  }
+
+  double _calculateBarWidth(int index) {
+    switch (_xAxisType) {
+      case AxisDistanceType.auto:
+        return totalAvailableBarSpace / _bars.length;
+      case AxisDistanceType.percentage:
+        return totalAvailableBarSpace * _bars[index].width!;
+      case AxisDistanceType.pixel:
+        return _bars[index].width!;
+    }
+  }
+
+  void _setBarConstraints() {
+    double dx = _chartConstraints.xMin;
+    for (int i = 0; i < _bars.length; i++) {
+      final width = _calculateBarWidth(i).roundToDouble();
+      _bars[i].constraints = ConstrainedArea(
+        xMin: dx,
+        xMax: dx + width,
+        yMin: _chartConstraints.yMin,
+        yMax: _chartConstraints.yMax,
+      );
+      dx += width + _gap;
+    }
+  }
+
+  (int, int) get firstAndLastPaintedBarIndexes {
+    final totalBarWidth = _barWidthPixels + _gap;
+    final translation = currentTranslation;
+
+    int first = max(
+        ((translation.xMin / totalBarWidth).floor()) -
+            _horizontalBarScrollPadding,
+        0);
+    int last = min(
+        ((translation.xMax / totalBarWidth).ceil()) +
+            _horizontalBarScrollPadding,
+        _bars.length - 1);
+
+    return (first, last);
   }
 
   void add(T newBar) {
