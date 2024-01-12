@@ -1,19 +1,18 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_charts/flutter_custom_charts.dart';
+import 'package:three_dimensional_bar_chart/app.dart';
 
 const primaryFill = Color(0xFF155B75);
 const secondaryFill = Color(0xFF155B75);
 const tertiaryFill = Color(0xFF1C3F4C);
 const stroke = Color(0xFF00B0F0);
 
-final rng = Random();
+// final rng = Random();
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
+/*
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -131,18 +130,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final pixelWidthController = BarChartController(
     bars: List.generate(
-      10000,
+      200,
       (index) => Bar(
         fill: primaryFill,
         // stroke: stroke,
         yMax: rng.nextInt(10).toDouble() + 2,
-        width: rng.nextInt(50).toDouble() + 2,
-        // label: Label(
-        //   text: '$index',
-        //   style: const TextStyle(fontSize: 12, color: Colors.white),
-        //   alignment: Alignment.center,
-        //   // padding: const EdgeInsets.only(bottom: 5),
-        // ),
+        width: rng.nextInt(50).toDouble() + 5,
+        label: Label(
+          text: '${index + 1}',
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+          alignment: Alignment.center,
+          // padding: const EdgeInsets.only(bottom: 5),
+        ),
         // lines: [
         //   HorizontalLine(
         //     fill: Colors.white,
@@ -157,23 +156,25 @@ class _MyHomePageState extends State<MyHomePage> {
         // ],
       ),
     ),
-    barAnimationDetails: const AnimationDetails(
-      duration: Duration(seconds: 1),
-      curve: Curves.easeOut,
-    ),
+    // staticBarWidth: 20,
+    // barAnimationDetails: const AnimationDetails(
+    //   duration: Duration(seconds: 1),
+    //   curve: Curves.easeOut,
+    // ),
     xAxisType: AxisDistanceType.pixel,
     yAxisType: AxisDistanceType.auto,
-    padding: const EdgeInsets.only(left: 80, right: 80, bottom: 40),
-    gap: 1,
-    // lines: [
-    //   HorizontalLine(
-    //     fill: Colors.white,
-    //     dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
-    //     width:
-    //         const LineDimension(mode: LineConstraintMode.percentage, value: 1),
-    //     height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
-    //   ),
-    // ],
+    padding: const EdgeInsets.only(left: 40, right: 80, bottom: 40),
+    gap: 5,
+    lines: [
+      HorizontalLine(
+        fill: Colors.white,
+        dy: const LineDimension(mode: LineConstraintMode.pixel, value: 20),
+        width:
+            const LineDimension(mode: LineConstraintMode.percentage, value: 1),
+        height: const LineDimension(mode: LineConstraintMode.pixel, value: 1),
+        style: const Dashed(),
+      ),
+    ],
   );
 
   BarChartController<Bar> get controller => pixelWidthController;
@@ -188,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: SizedBox(
           height: 400,
-          child: BarChart(
+          child: XYChart(
             controller: controller,
             onTap: (index, cube) {
               if (cube.fill == primaryFill) {
@@ -219,3 +220,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+*/

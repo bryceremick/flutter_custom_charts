@@ -5,3 +5,15 @@ enum AxisDistanceType {
   percentage,
   auto,
 }
+
+enum AxisPosition {
+  left,
+  top,
+  right,
+  bottom,
+}
+
+enum AxisDirection {
+  vertical,
+  horizontal,
+}

@@ -6,8 +6,8 @@ const int _tweenTickTime = 2;
 // TODO - account for bars with different widths
 // TODO - pass in the tween value and have the bar animate itself?
 
-class BarChart<T extends Bar> extends StatefulWidget {
-  const BarChart({
+class XYChart<T extends Bar> extends StatefulWidget {
+  const XYChart({
     super.key,
     required this.controller,
     this.onTap,
@@ -17,10 +17,10 @@ class BarChart<T extends Bar> extends StatefulWidget {
   final void Function(int, T)? onTap;
 
   @override
-  State<BarChart<T>> createState() => _BarChartState<T>();
+  State<XYChart<T>> createState() => _XYChartState<T>();
 }
 
-class _BarChartState<T extends Bar> extends State<BarChart<T>> {
+class _XYChartState<T extends Bar> extends State<XYChart<T>> {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -38,6 +38,7 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
                 details.localPosition.dx - widget.controller.xScrollOffset;
             final y = details.localPosition.dy;
 
+            // TODO - change this to a binary search
             for (int i = 0; i < widget.controller.bars.length; i++) {
               if (!widget.controller.bars[i].isOutOfBounds(x, y)) {
                 widget.onTap!.call(i, widget.controller.bars[i]);
@@ -89,7 +90,7 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
             },
             child: CustomPaint(
               // size: Size(widget.width, widget.height),
-              painter: _BarChartPainter(
+              painter: _XYChartPainter(
                 controller: widget.controller,
               ),
             ),
@@ -100,8 +101,8 @@ class _BarChartState<T extends Bar> extends State<BarChart<T>> {
   }
 }
 
-class _BarChartPainter<T extends Bar> extends CustomPainter {
-  _BarChartPainter({
+class _XYChartPainter<T extends Bar> extends CustomPainter {
+  _XYChartPainter({
     required this.controller,
   }) : super(repaint: controller);
 
@@ -146,26 +147,17 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
       yMin: 0 + controller.padding.top,
       yMax: size.height - controller.padding.bottom,
     );
-    controller.chartConstraints = constraints;
+    controller._setChartConstraints(constraints);
 
     final translation = controller.currentTranslation;
     canvas.translate(-translation.xMin, 0);
-    // final (firstIndex, lastIndex) = controller.firstAndLastPaintedBarIndexes;
 
-    _paintYAxes(canvas, size, translation, constraints);
-
-    // double dx = constraints.xMin + firstIndex * controller.totalBarWidthPixels;
-    int i = controller.firstPaintedBarIndex;
-    T bar = controller.bars[i];
-    while (bar.constraints.xMin <= translation.xMax + constraints.xMin) {
-      // final xMaxBar = (dx + controller.barWidthPixels).roundToDouble();
-      // if (xMaxBar > constraints.xMax &&
-      //     controller.xAxisType != AxisDistanceType.pixel) {
-      //   throw OutOfBoundsException(
-      //       'Cannot paint bar[$i] with width [${controller.barWidthPixels}] because it exceeds the chart xMax constraint [${constraints.xMax}]');
-      // }
-
+    int i = controller._firstPaintedBarIndex;
+    while (controller.bars[i].constraints.xMin <=
+        translation.xMax + constraints.xMin) {
+      T bar = controller.bars[i];
       double dy = bar.yMax;
+
       if (controller.barAnimation != null &&
           controller.barAnimation!.isAnimating) {
         dy = (bar.yMax - bar.yMin) * controller.barAnimation!.value;
@@ -205,11 +197,12 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
         );
       }
 
-      bar = controller.bars[++i];
+      i++;
+
+      if (i >= controller.bars.length) break;
     }
 
-    // print(controller.firstVisibleBarIndex);
-    // print(controller._maxIterations);
+    _paintYAxes(canvas, size, translation, constraints);
 
     if (controller.lines.isNotEmpty) {
       for (final line in controller.lines) {
@@ -222,28 +215,10 @@ class _BarChartPainter<T extends Bar> extends CustomPainter {
             ));
       }
     }
-
-    print('----------------');
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-double _determineBarWidth(
-  AxisDistanceType mode,
-  double totalAvailableBarSpace,
-  int barsLength,
-  double? barWidth,
-) {
-  switch (mode) {
-    case AxisDistanceType.auto:
-      return totalAvailableBarSpace / barsLength;
-    case AxisDistanceType.percentage:
-      return totalAvailableBarSpace * barWidth!;
-    case AxisDistanceType.pixel:
-      return barWidth!;
-  }
 }
 
 double _translateToCanvasPixelY(
@@ -279,6 +254,7 @@ double? _nextScrollOffset(
   required double xScrollOffset,
   required double xScrollOffsetMax,
 }) {
+  // print('xScrollOffset: $xScrollOffset, xScrollOffsetMax: $xScrollOffsetMax');
   if (barWidthType == AxisDistanceType.pixel &&
       xScrollOffset <= 0 &&
       xScrollOffset >= xScrollOffsetMax) {

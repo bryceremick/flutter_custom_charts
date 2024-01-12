@@ -31,13 +31,12 @@ class Dashed extends DefaultLineStyle {
   final double gap;
 }
 
-abstract class Line<T extends DefaultLineStyle> extends LinePainter {
+abstract class Line<T extends DefaultLineStyle> extends ConstrainedPainter {
   Line({
     required this.fill,
     required this.width,
     required this.height,
     this.style,
-    super.constraints,
   });
 
   final Color fill;
@@ -53,7 +52,6 @@ class HorizontalLine<T extends DefaultLineStyle> extends Line {
     required super.width,
     required super.height,
     T? style,
-    super.constraints,
   }) : super(style: style);
 
   final LineDimension dy;
@@ -61,9 +59,9 @@ class HorizontalLine<T extends DefaultLineStyle> extends Line {
   @override
   void paint(
     Canvas canvas, {
-    required ConstrainedArea area,
+    required ConstrainedArea constraints,
   }) {
-    constraints = area;
+    super.constraints = constraints;
     double lineEndX = width.mode == LineConstraintMode.percentage
         ? constraints.xMin + (width.value * constraints.width)
         : constraints.xMin + width.value;

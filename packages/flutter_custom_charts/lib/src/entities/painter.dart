@@ -1,49 +1,35 @@
 part of flutter_custom_charts;
 
-abstract class ConstrainedPainter {
-  ConstrainedPainter({
-    this.constraints = const ConstrainedArea(
-      xMin: 0,
-      xMax: 0,
-      yMin: 0,
-      yMax: 0,
-    ),
-  });
-
-  ConstrainedArea constraints;
-}
-
-abstract class BarPainter implements ConstrainedPainter {
-  BarPainter({
-    this.constraints = const ConstrainedArea(
-      xMin: 0,
-      xMax: 0,
-      yMin: 0,
-      yMax: 0,
-    ),
-  });
-
-  @override
-  ConstrainedArea constraints;
+abstract mixin class ConstrainedPainter {
+  ConstrainedArea constraints = const ConstrainedArea.empty();
 
   void paint(
     Canvas canvas, {
-    required ConstrainedArea area,
-    required double canvasRelativeYMin,
-    required double canvasRelativeYMax,
+    required ConstrainedArea constraints,
   }) {
-    constraints = area;
+    this.constraints = constraints;
   }
 }
 
+abstract class BarPainter {
+  ConstrainedArea constraints = const ConstrainedArea.empty();
+  ConstrainedArea barArea = const ConstrainedArea.empty();
+
+  void paint(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required ConstrainedArea barArea,
+  }) {
+    this.constraints = constraints;
+    this.barArea = barArea;
+  }
+}
+
+
+/*
 abstract class LinePainter implements ConstrainedPainter {
   LinePainter({
-    this.constraints = const ConstrainedArea(
-      xMin: 0,
-      xMax: 0,
-      yMin: 0,
-      yMax: 0,
-    ),
+    this.constraints = const ConstrainedArea.empty(),
   });
 
   @override
@@ -59,12 +45,7 @@ abstract class LinePainter implements ConstrainedPainter {
 
 abstract class LabelPainter implements ConstrainedPainter {
   LabelPainter({
-    this.constraints = const ConstrainedArea(
-      xMin: 0,
-      xMax: 0,
-      yMin: 0,
-      yMax: 0,
-    ),
+    this.constraints = const ConstrainedArea.empty(),
   });
 
   @override
@@ -77,3 +58,20 @@ abstract class LabelPainter implements ConstrainedPainter {
     constraints = area;
   }
 }
+
+abstract class ChartPainter implements ConstrainedPainter {
+  ChartPainter({
+    this.constraints = const ConstrainedArea.empty(),
+  });
+
+  @override
+  ConstrainedArea constraints;
+
+  void paint(
+    Canvas canvas, {
+    required ConstrainedArea area,
+  }) {
+    constraints = area;
+  }
+}
+*/

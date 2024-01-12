@@ -1,6 +1,6 @@
 part of flutter_custom_charts;
 
-class Label extends LabelPainter {
+class Label extends ConstrainedPainter {
   Label({
     required this.text,
     this.style = const TextStyle(fontSize: 12, color: Colors.white),
@@ -16,35 +16,41 @@ class Label extends LabelPainter {
   @override
   void paint(
     Canvas canvas, {
-    required ConstrainedArea area,
+    required ConstrainedArea constraints,
   }) {
-    super.constraints = area.shrink(padding);
+    super.constraints = constraints.shrink(padding);
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
         style: style,
       ),
       textDirection: TextDirection.ltr,
-    )..layout(maxWidth: constraints.width);
+    )..layout(maxWidth: super.constraints.width);
 
     // default alignment is top left
-    double x = constraints.xMin;
-    double y = constraints.yMin;
+    double x = super.constraints.xMin;
+    double y = super.constraints.yMin;
 
     if (alignment.x == 0) {
       // horizontal center alignment
-      x += (constraints.xMax - constraints.xMin - textPainter.width) / 2;
+      x += (super.constraints.xMax -
+              super.constraints.xMin -
+              textPainter.width) /
+          2;
     } else if (alignment.x == 1) {
       // horizontal right alignment
-      x = constraints.xMax - textPainter.width;
+      x = super.constraints.xMax - textPainter.width;
     }
 
     if (alignment.y == 0) {
       // vertical center alignment
-      y += (constraints.yMax - constraints.yMin - textPainter.height) / 2;
+      y += (super.constraints.yMax -
+              super.constraints.yMin -
+              textPainter.height) /
+          2;
     } else if (alignment.y == 1) {
       // vertical bottom alignment
-      y = constraints.yMax - textPainter.height;
+      y = super.constraints.yMax - textPainter.height;
     }
 
     textPainter.paint(canvas, Offset(x, y));

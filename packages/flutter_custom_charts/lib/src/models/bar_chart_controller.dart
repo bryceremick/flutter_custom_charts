@@ -26,6 +26,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     double gap = 15,
     double? explicitChartMax,
     double? explicitChartMin,
+    double? staticBarWidth,
     AnimationDetails? barAnimationDetails,
   }) {
     _bars = bars;
@@ -36,6 +37,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     _padding = padding;
     _explicitChartMax = explicitChartMax;
     _explicitChartMin = explicitChartMin;
+    _staticBarWidth = staticBarWidth;
     _chartConstraints = const ConstrainedArea.empty();
     _calculateBarMetrics(bars);
 
@@ -44,7 +46,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
         vsync: this,
         duration: const Duration(seconds: 1),
       ),
-      curve: Curves.linear,
+      curve: Curves.easeOutCubic,
       onUpdate: (value) {},
     );
 
@@ -67,6 +69,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   late AxisDistanceType _yAxisType;
   double? _explicitChartMax;
   double? _explicitChartMin;
+  double? _staticBarWidth;
   late double _gap;
   late List<T> _bars;
   late List<Line> _lines;
@@ -77,7 +80,6 @@ class BarChartController<T extends Bar> extends ChangeNotifier
   double _totalBarsWidth = 0;
   double _implicitChartMax = 0;
   double _implicitChartMin = 0;
-  double _barWidthPixels = 0;
 
   List<T> get bars => _bars;
   List<Line> get lines => _lines;
@@ -98,13 +100,14 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     );
   }
 
+  // TODO - this is not correct for auto and percentage
+  // this also assumes there will be no scrolling
   double get totalAvailableBarSpace =>
       (_chartConstraints.width - ((_bars.length - 1) * _gap));
-  double get barWidthPixels => _barWidthPixels;
-  double get totalBarWidthPixels => _barWidthPixels + _gap;
-  double get xScrollOffsetMax =>
-      (((_totalBarsWidth + (gap * (bars.length - 1))) * -1) +
-          _chartConstraints.width);
+
+  double get xScrollOffsetMax => _bars.isNotEmpty
+      ? (_bars.last.constraints.xMax - chartConstraints.xMax) * -1
+      : -_chartConstraints.xMax;
   double get xScrollOffsetPercentage => xScrollOffset / xScrollOffsetMax;
   double get implicitChartMax => _implicitChartMax;
   double get implicitChartMin => _implicitChartMin;
@@ -219,21 +222,27 @@ class BarChartController<T extends Bar> extends ChangeNotifier
     notifyListeners();
   }
 
-  set chartConstraints(ConstrainedArea constraints) {
+  void _setChartConstraints(ConstrainedArea constraints) {
     if (constraints == _chartConstraints) {
       return;
     }
     _chartConstraints = constraints;
-    _setBarConstraints();
+    _setAllBarConstraints();
   }
 
-  int get firstPaintedBarIndex {
-    // binary search
+  int get _firstPaintedBarIndex {
     int left = 0;
     int right = _bars.length - 1;
     final x = -xScrollOffset + chartConstraints.xMin;
     int i = 0;
 
+    // if all bars are same width, do not use binary search
+    if (_staticBarWidth != null) {
+      final totalBarWidth = _staticBarWidth! + _gap;
+      return max((-xScrollOffset / totalBarWidth).floor(), 0);
+    }
+
+    // binary search
     while (left <= right) {
       i++;
       int mid = left + ((right - left) >> 1);
@@ -241,7 +250,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
       double xMax = _bars[mid].constraints.xMax + _gap;
 
       if (xMin <= x && x <= xMax) {
-        print('iterations: $i');
+        // print('iterations: $i');
         return mid;
       } else if (x < xMin) {
         right = mid - 1;
@@ -250,7 +259,7 @@ class BarChartController<T extends Bar> extends ChangeNotifier
       }
     }
 
-    throw BarChartException('Could not find first painted bar index');
+    throw XYChartException('Could not find first painted bar index');
   }
 
   double _calculateBarWidth(int index) {
@@ -258,13 +267,29 @@ class BarChartController<T extends Bar> extends ChangeNotifier
       case AxisDistanceType.auto:
         return totalAvailableBarSpace / _bars.length;
       case AxisDistanceType.percentage:
-        return totalAvailableBarSpace * _bars[index].width!;
+        final width =
+            _staticBarWidth != null ? _staticBarWidth! : _bars[index].width!;
+        return totalAvailableBarSpace * width;
       case AxisDistanceType.pixel:
-        return _bars[index].width!;
+        return _staticBarWidth != null ? _staticBarWidth! : _bars[index].width!;
     }
   }
 
-  void _setBarConstraints() {
+  // void _setAllBarConstraints() {
+  //   double dx = _chartConstraints.xMin;
+  //   for (int i = 0; i < _bars.length; i++) {
+  //     final width = _calculateBarWidth(i).roundToDouble();
+  //     _bars[i].constraints = ConstrainedArea(
+  //       xMin: dx,
+  //       xMax: dx + width,
+  //       yMin: _chartConstraints.yMin,
+  //       yMax: _chartConstraints.yMax,
+  //     );
+  //     dx += (width + _gap);
+  //   }
+  // }
+
+  void _setAllBarConstraints() {
     double dx = _chartConstraints.xMin;
     for (int i = 0; i < _bars.length; i++) {
       final width = _calculateBarWidth(i).roundToDouble();
@@ -274,25 +299,38 @@ class BarChartController<T extends Bar> extends ChangeNotifier
         yMin: _chartConstraints.yMin,
         yMax: _chartConstraints.yMax,
       );
-      dx += width + _gap;
+      dx += (width + _gap);
     }
   }
 
-  (int, int) get firstAndLastPaintedBarIndexes {
-    final totalBarWidth = _barWidthPixels + _gap;
-    final translation = currentTranslation;
-
-    int first = max(
-        ((translation.xMin / totalBarWidth).floor()) -
-            _horizontalBarScrollPadding,
-        0);
-    int last = min(
-        ((translation.xMax / totalBarWidth).ceil()) +
-            _horizontalBarScrollPadding,
-        _bars.length - 1);
-
-    return (first, last);
+  void _setBarConstraints(int index) {
+    final dx = index == 0
+        ? _chartConstraints.xMin
+        : _bars[index - 1].constraints.xMax + _gap;
+    final width = _calculateBarWidth(index).roundToDouble();
+    _bars[index].constraints = ConstrainedArea(
+      xMin: dx,
+      xMax: dx + width,
+      yMin: _chartConstraints.yMin,
+      yMax: _chartConstraints.yMax,
+    );
   }
+
+  // (int, int) get firstAndLastPaintedBarIndexes {
+  //   final totalBarWidth = _barWidthPixels + _gap;
+  //   final translation = currentTranslation;
+
+  //   int first = max(
+  //       ((translation.xMin / totalBarWidth).floor()) -
+  //           _horizontalBarScrollPadding,
+  //       0);
+  //   int last = min(
+  //       ((translation.xMax / totalBarWidth).ceil()) +
+  //           _horizontalBarScrollPadding,
+  //       _bars.length - 1);
+
+  //   return (first, last);
+  // }
 
   void add(T newBar) {
     _bars.add(newBar);

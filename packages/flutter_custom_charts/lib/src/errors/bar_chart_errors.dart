@@ -1,17 +1,17 @@
 part of flutter_custom_charts;
 
-class BarChartException implements Exception {
+class XYChartException implements Exception {
   final String message;
 
-  BarChartException(this.message);
+  XYChartException(this.message);
 
   @override
   String toString() {
-    return 'BarChartException: $message';
+    return 'XYChartException: $message';
   }
 }
 
-class OutOfBoundsException implements BarChartException {
+class OutOfBoundsException implements XYChartException {
   @override
   final String message;
 

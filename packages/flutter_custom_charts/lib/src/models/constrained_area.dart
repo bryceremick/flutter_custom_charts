@@ -21,8 +21,8 @@ class ConstrainedArea {
   final double yMin;
   final double yMax;
 
-  double get width => xMax - xMin;
-  double get height => yMax - yMin;
+  double get width => (xMax - xMin).abs();
+  double get height => (yMax - yMin).abs();
   Size get size => Size(width, height);
 
   bool isOutOfBoundsY(double y) =>
