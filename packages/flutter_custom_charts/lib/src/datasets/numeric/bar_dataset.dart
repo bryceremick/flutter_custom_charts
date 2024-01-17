@@ -205,34 +205,69 @@ class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
     _computeSecondaryAxisBounds(bars);
   }
 
-  /// [primaryAxisValue] is relative to the dataset(NOT the canvas)
-  int? _indexAt(double primaryAxisValue) {
-    if (_bars.isEmpty) {
-      return null;
+  int? _firstIndexWithin(Range range) {
+    int startIndex = _binarySearch(range.min);
+
+    if (startIndex < _bars.length &&
+        _bars[startIndex].primaryAxisMin >= range.min &&
+        _bars[startIndex].primaryAxisMin <= range.max) {
+      return startIndex;
     }
 
-    int left = 0;
-    int right = _bars.length - 1;
-    int i = 0;
+    return null;
+  }
 
-    // binary search
-    while (left <= right) {
-      i++;
-      int mid = left + ((right - left) >> 1);
-      double min = _bars[mid].primaryAxisMin;
-      double max = _bars[mid].primaryAxisMax;
+  int _binarySearch(double primaryAxisValue) {
+    int low = 0;
+    int high = _bars.length - 1;
 
-      if (min <= primaryAxisValue && primaryAxisValue <= max) {
-        // print('iterations: $i');
-        return mid;
-      } else if (primaryAxisValue < min) {
-        right = mid - 1;
+    while (low <= high) {
+      int mid = low + ((high - low) >> 1);
+      if (_bars[mid].primaryAxisMin < primaryAxisValue) {
+        low = mid + 1;
+      } else if (_bars[mid].primaryAxisMin > primaryAxisValue) {
+        high = mid - 1;
       } else {
-        left = mid + 1;
+        // Adjust to find the first occurrence of the target
+        while (mid > 0 && _bars[mid - 1].primaryAxisMin == primaryAxisValue) {
+          mid--;
+        }
+        return mid;
       }
     }
 
     // not found
-    return null;
+    return low;
   }
+
+  // /// [primaryAxisValue] is relative to the dataset(NOT the canvas)
+  // int? _indexAt(double primaryAxisValue) {
+  //   if (_bars.isEmpty) {
+  //     return null;
+  //   }
+
+  //   int left = 0;
+  //   int right = _bars.length - 1;
+  //   int i = 0;
+
+  //   // binary search
+  //   while (left <= right) {
+  //     i++;
+  //     int mid = left + ((right - left) >> 1);
+  //     double min = _bars[mid].primaryAxisMin;
+  //     double max = _bars[mid].primaryAxisMax;
+
+  //     if (min <= primaryAxisValue && primaryAxisValue <= max) {
+  //       // print('iterations: $i');
+  //       return mid;
+  //     } else if (primaryAxisValue < min) {
+  //       right = mid - 1;
+  //     } else {
+  //       left = mid + 1;
+  //     }
+  //   }
+
+  //   // not found
+  //   return null;
+  // }
 }

@@ -68,27 +68,21 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
       }
 
       for (final dataset in secondaryAxis.barDatasets) {
-        // Linear transform canvas scroll offset value to dataset range.
-        // This is used to determine the first bar to paint.
-        final primaryAxisDatasetMinPosition = linearTransform(
-          _scrollOffset,
-          rangeA: primaryAxisCanvasRange,
-          rangeB: explicitRange ?? primaryAxisDatasetRange,
-        );
-
-        // Linear transform canvas range max value to dataset range.
-        // This is used to determine when to stop painting bars
-        final primaryAxisDatasetMaxPosition = linearTransform(
-          primaryAxisCanvasRange.max,
-          rangeA: primaryAxisCanvasRange,
-          rangeB: explicitRange ?? primaryAxisDatasetRange,
+        final primaryAxisDataSetRange = Range(
+          min: linearTransform(
+            primaryAxisCanvasRange.min,
+            rangeA: primaryAxisCanvasRange,
+            rangeB: explicitRange ?? primaryAxisDatasetRange,
+          ),
+          max: linearTransform(
+            primaryAxisCanvasRange.max,
+            rangeA: primaryAxisCanvasRange,
+            rangeB: explicitRange ?? primaryAxisDatasetRange,
+          ),
         );
 
         // binary search for the first bar to paint
-        print(Range(
-            min: primaryAxisDatasetMinPosition,
-            max: primaryAxisDatasetMaxPosition));
-        int? index = dataset._indexAt(primaryAxisDatasetMinPosition);
+        int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
 
         // if scroll offset is outside the dataset range, do not paint
         // this dataset.
@@ -99,7 +93,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
 
         // paint bars within chart viewport
         while (dataset.data[index!].primaryAxisMin <=
-            primaryAxisDatasetMaxPosition) {
+            primaryAxisDataSetRange.max) {
           final bar = dataset.data[index];
           final barConstraints = translateBarToCanvas(
             primaryAxisBarRange:
@@ -114,8 +108,6 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
             constraints: constraints,
           );
           bar.paint(canvas, constraints: barConstraints);
-          index++;
-          if (index >= dataset.data.length) break;
 //           print('''
 // $index
 // primaryAxisBarRange: ${Range(min: bar.primaryAxisMin, max: bar.primaryAxisMax)}
@@ -123,6 +115,8 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
 // Transformed: $barConstraints
 // -------------------------
 // ''');
+          index++;
+          if (index >= dataset.data.length) break;
         }
       }
     }

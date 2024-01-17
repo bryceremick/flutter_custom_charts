@@ -22,7 +22,7 @@ class _AppState extends State<App> {
           200,
           (index) => DynamicBar(
             primaryAxisMin: index * 10,
-            primaryAxisMax: ((index + 1) * 10),
+            primaryAxisMax: ((index + 1) * 10) - 1,
             secondaryAxisMin: 0,
             secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
             // secondaryAxisMax: 10,
@@ -67,32 +67,18 @@ class _AppState extends State<App> {
     );
 
     Future.delayed(const Duration(seconds: 5), () {
-      // barDataset1.addAll([
-      //   DynamicBar(
-      //     primaryAxisMin: barDataset1.data.length * 10,
-      //     primaryAxisMax: ((barDataset1.data.length + 1) * 10) - 1,
-      //     secondaryAxisMin: -5,
-      //     secondaryAxisMax: 15,
-      //     fill: Colors.blue,
-      //   ),
-      // ]);
       primaryAxis.zoomTo(
           Range(min: 500, max: 600), const Duration(seconds: 3), Curves.linear);
     });
-
     Future.delayed(const Duration(seconds: 10), () {
-      // barDataset1.addAll([
-      //   DynamicBar(
-      //     primaryAxisMin: barDataset1.data.length * 10,
-      //     primaryAxisMax: ((barDataset1.data.length + 1) * 10) - 1,
-      //     secondaryAxisMin: -5,
-      //     secondaryAxisMax: 15,
-      //     fill: Colors.blue,
-      //   ),
-      // ]);
       primaryAxis.zoomTo(
-          Range(min: 0, max: 1000), const Duration(seconds: 3), Curves.linear);
+          Range(min: 600, max: 700), const Duration(seconds: 3), Curves.linear);
     });
+
+    // Future.delayed(const Duration(seconds: 10), () {
+    //   primaryAxis.zoomTo(
+    //       Range(min: 0, max: 1000), const Duration(seconds: 3), Curves.linear);
+    // });
 
     // Timer.periodic(const Duration(seconds: 1), (timer) {
     //   barDataset.add(
