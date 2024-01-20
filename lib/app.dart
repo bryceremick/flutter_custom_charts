@@ -59,21 +59,28 @@ class _AppState extends State<App> {
     primaryAxis = PrimaryNumericAxisController(
       secondaryAxisControllers: [secondaryAxis],
       position: AxisPosition.bottom,
-      // explicitRange: Range(min: 500, max: 1000),
+      explicitRange: Range(min: 1000, max: 1500),
+      // scrollableRange: Range(min: 1000, max: 1500),
     );
     chart = NewXYChart(
       primaryAxisController: primaryAxis,
       padding: const EdgeInsets.only(bottom: 20, left: 40, top: 10, right: 100),
     );
 
-    Future.delayed(const Duration(seconds: 5), () {
-      primaryAxis.zoomTo(
-          Range(min: 500, max: 600), const Duration(seconds: 3), Curves.linear);
-    });
-    Future.delayed(const Duration(seconds: 10), () {
-      primaryAxis.zoomTo(
-          Range(min: 600, max: 700), const Duration(seconds: 3), Curves.linear);
-    });
+    // Future.delayed(const Duration(seconds: 5), () {
+    //   primaryAxis.zoomTo(
+    //     Range(min: -200, max: 600),
+    //     const Duration(seconds: 3),
+    //     Curves.linear,
+    //   );
+    // });
+    // Future.delayed(const Duration(seconds: 10), () {
+    //   primaryAxis.zoomTo(
+    //     Range(min: 1800, max: 2200),
+    //     const Duration(seconds: 3),
+    //     Curves.linear,
+    //   );
+    // });
 
     // Future.delayed(const Duration(seconds: 10), () {
     //   primaryAxis.zoomTo(

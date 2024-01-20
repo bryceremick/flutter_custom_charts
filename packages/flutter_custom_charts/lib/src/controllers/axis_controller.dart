@@ -30,28 +30,73 @@ abstract class PrimaryAxisController extends _AxisController
     implements TickerProvider {
   PrimaryAxisController({
     required super.position,
+    required this.isScrollable,
+    this.scrollableRange,
     super.explicitRange,
   });
 
+  final bool isScrollable;
+  final Range? scrollableRange;
   ChartAnimation? _zoomAnimation;
-  double _scrollOffset = 0;
-  double get axisScrollOffset => _scrollOffset;
-  void _setAxisScrollOffset(double offset, EdgeInsets chartPadding) {
-    switch (position) {
-      case AxisPosition.left:
-        _scrollOffset = offset + chartPadding.left;
-        break;
-      case AxisPosition.right:
-        _scrollOffset = offset + chartPadding.right;
-        break;
-      case AxisPosition.top:
-        _scrollOffset = offset + chartPadding.top;
-        break;
-      case AxisPosition.bottom:
-        _scrollOffset = offset + chartPadding.left;
-        break;
+  Range? get _implicitDataRange => null;
+
+  _onDragUpdate(
+    DragUpdateDetails details, {
+    required Range implicitDatasetRange,
+  }) {
+    if (details.delta == Offset.zero || !isScrollable) {
+      return;
     }
-    notifyListeners();
+
+    late final double delta;
+    if (direction == AxisDirection.horizontal) {
+      if (details.delta.dy != 0) {
+        return;
+      }
+
+      delta = calculateDragDelta(
+        details.delta.dx,
+        canvasRange: Range(min: constraints.xMin, max: constraints.xMax),
+        implicitDatasetRange: implicitDatasetRange,
+        explicitDatasetRange: explicitRange ?? implicitDatasetRange,
+      );
+    }
+
+    if (direction == AxisDirection.vertical) {
+      if (details.delta.dx != 0) {
+        return;
+      }
+      delta = calculateDragDelta(
+        details.delta.dy,
+        canvasRange: Range(min: constraints.yMin, max: constraints.yMax),
+        implicitDatasetRange: implicitDatasetRange,
+        explicitDatasetRange: explicitRange ?? implicitDatasetRange,
+      );
+    }
+
+    final newRange = Range(
+      min: (explicitRange != null
+              ? explicitRange!.min
+              : implicitDatasetRange.min) -
+          delta,
+      max: (explicitRange != null
+              ? explicitRange!.max
+              : implicitDatasetRange.max) -
+          delta,
+    );
+
+    if (!newRange.isWithin(scrollableRange ?? implicitDatasetRange)) {
+      return;
+    }
+    explicitRange = newRange;
+  }
+
+  _onDragStart(DragStartDetails details) {
+    //
+  }
+
+  _onDragEnd(DragEndDetails details) {
+    //
   }
 
   @override

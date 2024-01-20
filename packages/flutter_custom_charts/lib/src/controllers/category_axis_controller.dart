@@ -4,6 +4,8 @@ class PrimaryCategoryAxisController extends PrimaryAxisController {
   PrimaryCategoryAxisController({
     required this.secondaryAxisControllers,
     super.position = AxisPosition.bottom,
+    super.isScrollable = true,
+    super.scrollableRange,
     super.explicitRange,
   }) {
     for (final secondary in secondaryAxisControllers) {

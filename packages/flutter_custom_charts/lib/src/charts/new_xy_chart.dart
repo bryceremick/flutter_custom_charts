@@ -7,18 +7,6 @@ class NewXYChart extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.fill = Colors.black87,
   });
-
-  // {
-  //   bool isPositive = true;
-  //   Timer.periodic(const Duration(milliseconds: 100), (timer) {
-  //     if (timer.tick % 30 == 0) {
-  //       isPositive = !isPositive;
-  //     }
-  //     final offset = primaryAxisController.axisScrollOffset - 1;
-  //     primaryAxisController._setAxisScrollOffset(offset, padding);
-  //     print(primaryAxisController.axisScrollOffset);
-  //   });
-  // }
   final PrimaryAxisController primaryAxisController;
   final EdgeInsets padding;
   final Color fill;
@@ -29,12 +17,26 @@ class NewXYChart extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       child: GestureDetector(
+        onHorizontalDragUpdate: (details) {
+          if (primaryAxisController._implicitDataRange != null) {
+            primaryAxisController._onDragUpdate(
+              details,
+              implicitDatasetRange: primaryAxisController._implicitDataRange!,
+            );
+          }
+        },
+        onVerticalDragUpdate: (details) {
+          if (primaryAxisController._implicitDataRange != null) {
+            primaryAxisController._onDragUpdate(
+              details,
+              implicitDatasetRange: primaryAxisController._implicitDataRange!,
+            );
+          }
+        },
         child: ClipRect(
           child: CustomPaint(
             painter: ChartCanvas(
-              primaryAxisController: primaryAxisController
-                .._setAxisScrollOffset(
-                    primaryAxisController.axisScrollOffset, padding),
+              primaryAxisController: primaryAxisController,
               padding: padding,
               fill: fill,
             ),

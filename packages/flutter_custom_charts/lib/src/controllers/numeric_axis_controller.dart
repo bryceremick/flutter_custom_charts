@@ -4,6 +4,8 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   PrimaryNumericAxisController({
     required this.secondaryAxisControllers,
     super.position = AxisPosition.bottom,
+    super.isScrollable = true,
+    super.scrollableRange,
     super.explicitRange,
   }) {
     for (final secondary in secondaryAxisControllers) {
@@ -25,6 +27,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     Canvas canvas, {
     required ConstrainedArea constraints,
   }) {
+    super.constraints = constraints;
     // TODO - verify that the explicit range is a subset of the implicit range
     final primaryAxisDatasetRange = _implicitDataRange;
     final primaryAxisCanvasRange = direction == AxisDirection.horizontal
@@ -43,7 +46,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     }
 
     if (explicitRange != null &&
-        !explicitRange!.isWithin(_implicitDataRange!)) {
+        !explicitRange!.isWithin(scrollableRange ?? primaryAxisDatasetRange)) {
       throw XYChartException(
         'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit$_implicitDataRange',
       );
@@ -83,17 +86,13 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
 
         // binary search for the first bar to paint
         int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
-
-        // if scroll offset is outside the dataset range, do not paint
-        // this dataset.
         if (index == null) {
-          print('scroll offset is outside the dataset range');
           break;
         }
 
         // paint bars within chart viewport
         while (dataset.data[index!].primaryAxisMin <=
-            primaryAxisDataSetRange.max) {
+            (primaryAxisDataSetRange.max + 1)) {
           final bar = dataset.data[index];
           final barConstraints = translateBarToCanvas(
             primaryAxisBarRange:
@@ -122,6 +121,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     }
   }
 
+  @override
   Range? get _implicitDataRange {
     Range? range;
     for (final secondaryAxis in secondaryAxisControllers) {
@@ -142,7 +142,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
       return;
     }
 
-    if (!to.isWithin(_implicitDataRange!)) {
+    if (!to.isWithin(scrollableRange ?? _implicitDataRange!)) {
       throw XYChartException(
         'Desired range must be a subset of the implicit dataset range. Desired$to, Implicit$_implicitDataRange',
       );

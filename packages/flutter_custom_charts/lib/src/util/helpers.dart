@@ -146,3 +146,16 @@ ConstrainedArea translateBarToCanvas({
       );
   }
 }
+
+double calculateDragDelta(
+  double delta, {
+  required Range canvasRange,
+  required Range implicitDatasetRange,
+  required Range explicitDatasetRange,
+}) {
+  double canvasAxisRange = canvasRange.difference();
+  double totalRange = implicitDatasetRange.difference();
+  double canvasProportion = explicitDatasetRange.difference() / totalRange;
+  double deltaPerPx = totalRange / canvasAxisRange;
+  return delta * deltaPerPx * canvasProportion;
+}

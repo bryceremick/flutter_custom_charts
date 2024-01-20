@@ -13,6 +13,10 @@ class Range {
     return min >= range.min && max <= range.max;
   }
 
+  double difference() {
+    return (max - min).abs();
+  }
+
   @override
   String toString() {
     return 'Range(min: $min, max: $max)';
@@ -211,6 +215,12 @@ class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
     if (startIndex < _bars.length &&
         _bars[startIndex].primaryAxisMin >= range.min &&
         _bars[startIndex].primaryAxisMin <= range.max) {
+      if (startIndex > 0) {
+        // decrementing allows us to have a "scrolling" like effect
+        // by painting the first bar outside of the viewport
+        startIndex--;
+      }
+
       return startIndex;
     }
 
