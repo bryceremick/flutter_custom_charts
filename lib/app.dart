@@ -23,9 +23,12 @@ class _AppState extends State<App> {
           (index) => DynamicBar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
+            // secondaryAxisMin:
+            //     index % 2 == 0 ? 0 : (rng.nextInt(10).toDouble() + 3) * -1,
+            // secondaryAxisMax:
+            //     index % 2 == 0 ? rng.nextInt(10).toDouble() + 3 : 0,
             secondaryAxisMin: 0,
             secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
-            // secondaryAxisMax: 10,
             fill: Colors.blue,
             label: Label(
               text: '$index',
@@ -54,17 +57,23 @@ class _AppState extends State<App> {
     secondaryAxis = SecondaryNumericAxisController(
       barDatasets: [barDataset1],
       position: AxisPosition.left,
-      // explicitRange: Range(min: 0, max: 10),
+      // details: AxisDetails(
+      //   stepLabelFormatter: (value) => '$value',
+      // ),
+      // explicitRange: Range(min: 0, max: 20),
     );
     primaryAxis = PrimaryNumericAxisController(
       secondaryAxisControllers: [secondaryAxis],
       position: AxisPosition.bottom,
       explicitRange: Range(min: 1000, max: 1500),
-      // scrollableRange: Range(min: 1000, max: 1500),
+      // scrollableRange: Range(min: -100, max: 2100),
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
     );
     chart = NewXYChart(
       primaryAxisController: primaryAxis,
-      padding: const EdgeInsets.only(bottom: 20, left: 40, top: 10, right: 100),
+      padding: const EdgeInsets.all(30),
     );
 
     // Future.delayed(const Duration(seconds: 5), () {

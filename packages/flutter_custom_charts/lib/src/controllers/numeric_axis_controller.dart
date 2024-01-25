@@ -7,6 +7,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     super.isScrollable = true,
     super.scrollableRange,
     super.explicitRange,
+    this.details,
   }) {
     for (final secondary in secondaryAxisControllers) {
       verifyAxisPositions(position, secondary.position);
@@ -19,36 +20,69 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   //
   // if axis is scrollable, need to know the pixel per unit ratio
 
+  AxisDetails? details;
   final List<SecondaryNumericAxisController<DynamicBarDataset>>
       secondaryAxisControllers;
+
+  ConstrainedArea _shrinkConstraints(ConstrainedArea constraints) {
+    constraints = constraints.shrink(
+      EdgeInsets.only(
+        left: position == AxisPosition.left ? details!.crossAxisPixelSize : 0,
+        top: position == AxisPosition.top ? details!.crossAxisPixelSize : 0,
+        right: position == AxisPosition.right ? details!.crossAxisPixelSize : 0,
+        bottom:
+            position == AxisPosition.bottom ? details!.crossAxisPixelSize : 0,
+      ),
+    );
+    for (final secondary in secondaryAxisControllers) {
+      if (secondary.details != null) {
+        constraints = constraints.shrink(
+          EdgeInsets.only(
+            left: secondary.position == AxisPosition.left
+                ? secondary.details!.crossAxisPixelSize
+                : 0,
+            top: secondary.position == AxisPosition.top
+                ? secondary.details!.crossAxisPixelSize
+                : 0,
+            right: secondary.position == AxisPosition.right
+                ? secondary.details!.crossAxisPixelSize
+                : 0,
+            bottom: secondary.position == AxisPosition.bottom
+                ? secondary.details!.crossAxisPixelSize
+                : 0,
+          ),
+        );
+      }
+    }
+
+    return constraints;
+  }
 
   @override
   void paint(
     Canvas canvas, {
     required ConstrainedArea constraints,
   }) {
-    super.constraints = constraints;
-    // TODO - verify that the explicit range is a subset of the implicit range
+    super.constraints = _shrinkConstraints(constraints);
     final primaryAxisDatasetRange = _implicitDataRange;
     final primaryAxisCanvasRange = direction == AxisDirection.horizontal
         ? Range(
-            min: constraints.xMin,
-            max: constraints.xMax,
+            min: super.constraints.xMin,
+            max: super.constraints.xMax,
           )
         : Range(
-            min: constraints.yMin,
-            max: constraints.yMax,
+            min: super.constraints.yMin,
+            max: super.constraints.yMax,
           );
 
     if (primaryAxisDatasetRange == null) {
-      print('no primary axis dataset range');
       return;
     }
 
     if (explicitRange != null &&
         !explicitRange!.isWithin(scrollableRange ?? primaryAxisDatasetRange)) {
       throw XYChartException(
-        'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit$_implicitDataRange',
+        'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit${scrollableRange ?? _implicitDataRange}',
       );
     }
 
@@ -57,16 +91,15 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
       final secondaryAxisCanvasRange =
           secondaryAxis.direction == AxisDirection.horizontal
               ? Range(
-                  min: constraints.xMin,
-                  max: constraints.xMax,
+                  min: super.constraints.xMin,
+                  max: super.constraints.xMax,
                 )
               : Range(
-                  min: constraints.yMin,
-                  max: constraints.yMax,
+                  min: super.constraints.yMin,
+                  max: super.constraints.yMax,
                 );
 
       if (secondaryAxisDatasetRange == null) {
-        print('no secondary axis dataset range');
         continue;
       }
 
@@ -104,7 +137,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
                 secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
             primaryAxisPosition: position,
             secondaryAxisPosition: secondaryAxis.position,
-            constraints: constraints,
+            constraints: super.constraints,
           );
           bar.paint(canvas, constraints: barConstraints);
 //           print('''
@@ -117,6 +150,38 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           index++;
           if (index >= dataset.data.length) break;
         }
+      }
+    }
+
+    if (details != null) {
+      _paintAxisDetails(
+        canvas,
+        constraints: determineAxisDetailsConstraints(
+          constraints: super.constraints,
+          position: position,
+          detailsCrossAxisPixelSize: details!.crossAxisPixelSize,
+        ),
+        details: details!,
+        datasetRange: explicitRange ?? primaryAxisDatasetRange,
+        fill: Colors.red,
+      );
+    }
+
+    for (final secondaryAxis in secondaryAxisControllers) {
+      if (secondaryAxis.details != null) {
+        secondaryAxis._paintAxisDetails(
+          canvas,
+          constraints: determineAxisDetailsConstraints(
+            constraints: super.constraints,
+            position: secondaryAxis.position,
+            detailsCrossAxisPixelSize:
+                secondaryAxis.details!.crossAxisPixelSize,
+          ),
+          details: secondaryAxis.details!,
+          datasetRange:
+              secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+          fill: Colors.red,
+        );
       }
     }
   }
@@ -200,16 +265,16 @@ class SecondaryNumericAxisController<T extends BarDataset>
   SecondaryNumericAxisController({
     required this.barDatasets,
     required super.position,
-    this.type = AxisDistanceType.auto,
     super.explicitRange,
+    this.details,
   }) {
     for (final dataset in barDatasets) {
       dataset.addListener(notifyListeners);
     }
   }
 
+  AxisDetails? details;
   final List<T> barDatasets;
-  final AxisDistanceType type;
 
   Range? get _implicitDataRange {
     Range? range;

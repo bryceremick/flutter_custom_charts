@@ -159,3 +159,51 @@ double calculateDragDelta(
   double deltaPerPx = totalRange / canvasAxisRange;
   return delta * deltaPerPx * canvasProportion;
 }
+
+void paintRectangle(
+  Canvas canvas, {
+  required ConstrainedArea constraints,
+  required Color fill,
+}) {
+  final background = Rect.fromLTRB(
+    constraints.xMin,
+    constraints.yMin,
+    constraints.xMax,
+    constraints.yMax,
+  );
+  canvas.drawRect(
+    background,
+    Paint()
+      ..color = fill
+      ..style = PaintingStyle.fill,
+  );
+}
+
+ConstrainedArea determineAxisDetailsConstraints({
+  required ConstrainedArea constraints,
+  required AxisPosition position,
+  required double detailsCrossAxisPixelSize,
+}) {
+  switch (position) {
+    case AxisPosition.left:
+      return constraints.copyWith(
+        xMin: constraints.xMin - detailsCrossAxisPixelSize,
+        xMax: constraints.xMin,
+      );
+    case AxisPosition.right:
+      return constraints.copyWith(
+        xMin: constraints.xMax,
+        xMax: constraints.xMax + detailsCrossAxisPixelSize,
+      );
+    case AxisPosition.top:
+      return constraints.copyWith(
+        yMin: constraints.yMin - detailsCrossAxisPixelSize,
+        yMax: constraints.yMin,
+      );
+    case AxisPosition.bottom:
+      return constraints.copyWith(
+        yMin: constraints.yMax,
+        yMax: constraints.yMax + detailsCrossAxisPixelSize,
+      );
+  }
+}

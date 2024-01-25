@@ -1,28 +1,5 @@
 part of flutter_custom_charts;
 
-class Range {
-  Range({required this.min, required this.max});
-  double min;
-  double max;
-
-  Range inverted() {
-    return Range(min: max, max: min);
-  }
-
-  bool isWithin(Range range) {
-    return min >= range.min && max <= range.max;
-  }
-
-  double difference() {
-    return (max - min).abs();
-  }
-
-  @override
-  String toString() {
-    return 'Range(min: $min, max: $max)';
-  }
-}
-
 abstract class BarDataset<T extends StaticBar> extends ChangeNotifier {
   final List<T> _bars = [];
   Range? _secondaryAxisRange;
@@ -249,35 +226,4 @@ class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
     // not found
     return low;
   }
-
-  // /// [primaryAxisValue] is relative to the dataset(NOT the canvas)
-  // int? _indexAt(double primaryAxisValue) {
-  //   if (_bars.isEmpty) {
-  //     return null;
-  //   }
-
-  //   int left = 0;
-  //   int right = _bars.length - 1;
-  //   int i = 0;
-
-  //   // binary search
-  //   while (left <= right) {
-  //     i++;
-  //     int mid = left + ((right - left) >> 1);
-  //     double min = _bars[mid].primaryAxisMin;
-  //     double max = _bars[mid].primaryAxisMax;
-
-  //     if (min <= primaryAxisValue && primaryAxisValue <= max) {
-  //       // print('iterations: $i');
-  //       return mid;
-  //     } else if (primaryAxisValue < min) {
-  //       right = mid - 1;
-  //     } else {
-  //       left = mid + 1;
-  //     }
-  //   }
-
-  //   // not found
-  //   return null;
-  // }
 }

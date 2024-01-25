@@ -19,31 +19,12 @@ class ChartCanvas extends CustomPainter {
       yMin: 0,
       yMax: size.height,
     );
-    _paintRectangle(canvas, constraints: constraints, fill: fill);
-    _paintPadding(canvas, constraints, padding, Colors.red);
+    paintRectangle(canvas, constraints: constraints, fill: fill);
     primaryAxisController.paint(
       canvas,
       constraints: constraints.shrink(padding),
     );
-  }
-
-  void _paintRectangle(
-    Canvas canvas, {
-    required ConstrainedArea constraints,
-    required Color fill,
-  }) {
-    final background = Rect.fromLTRB(
-      constraints.xMin,
-      constraints.yMin,
-      constraints.xMax,
-      constraints.yMax,
-    );
-    canvas.drawRect(
-      background,
-      Paint()
-        ..color = fill
-        ..style = PaintingStyle.fill,
-    );
+    _paintPadding(canvas, constraints, padding, Colors.green);
   }
 
   void _paintPadding(
@@ -53,7 +34,7 @@ class ChartCanvas extends CustomPainter {
     Color fill,
   ) {
     // left
-    _paintRectangle(
+    paintRectangle(
       canvas,
       constraints: constraints.copyWith(
         xMax: constraints.xMin + padding.left,
@@ -62,7 +43,7 @@ class ChartCanvas extends CustomPainter {
     );
 
     // top
-    _paintRectangle(
+    paintRectangle(
       canvas,
       constraints: constraints.copyWith(
         yMax: constraints.yMin + padding.top,
@@ -71,7 +52,7 @@ class ChartCanvas extends CustomPainter {
     );
 
     // right
-    _paintRectangle(
+    paintRectangle(
       canvas,
       constraints: constraints.copyWith(
         xMin: constraints.xMax - padding.right,
@@ -80,7 +61,7 @@ class ChartCanvas extends CustomPainter {
     );
 
     // bottom
-    _paintRectangle(
+    paintRectangle(
       canvas,
       constraints: constraints.copyWith(
         yMin: constraints.yMax - padding.bottom,

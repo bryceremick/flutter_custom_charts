@@ -11,6 +11,14 @@ abstract mixin class ConstrainedPainter {
   }
 }
 
+abstract class AxisPainter {
+  void paint(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required Offset? canvasRelativePreviousPoint,
+  });
+}
+
 abstract class BarPainter {
   ConstrainedArea constraints = const ConstrainedArea.empty();
   ConstrainedArea barArea = const ConstrainedArea.empty();
@@ -23,6 +31,14 @@ abstract class BarPainter {
     this.constraints = constraints;
     this.barArea = barArea;
   }
+}
+
+abstract class PointPainter {
+  void paint(
+    Canvas canvas, {
+    required Offset canvasRelativePoint,
+    required Offset? canvasRelativePreviousPoint,
+  });
 }
 
 
