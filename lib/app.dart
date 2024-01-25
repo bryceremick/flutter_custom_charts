@@ -57,13 +57,34 @@ class _AppState extends State<App> {
     secondaryAxis = SecondaryNumericAxisController(
       barDatasets: [barDataset1],
       position: AxisPosition.left,
-      // details: AxisDetails(
-      //   stepLabelFormatter: (value) => '$value',
-      // ),
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
+      // explicitRange: Range(min: -15, max: 15),
+    );
+    secondaryAxis2 = SecondaryNumericAxisController(
+      barDatasets: [],
+      position: AxisPosition.right,
+      explicitRange: Range(min: 0, max: 20),
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
       // explicitRange: Range(min: 0, max: 20),
     );
     primaryAxis = PrimaryNumericAxisController(
-      secondaryAxisControllers: [secondaryAxis],
+      secondaryAxisControllers: [secondaryAxis, secondaryAxis2],
+      position: AxisPosition.bottom,
+      explicitRange: Range(min: 1000, max: 1500),
+      // scrollableRange: Range(min: -100, max: 2100),
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
+      onExplicitRangeChange: (range) {
+        primaryAxis2.explicitRange = range;
+      },
+    );
+    primaryAxis2 = PrimaryNumericAxisController(
+      secondaryAxisControllers: [secondaryAxis, secondaryAxis2],
       position: AxisPosition.bottom,
       explicitRange: Range(min: 1000, max: 1500),
       // scrollableRange: Range(min: -100, max: 2100),
@@ -73,6 +94,10 @@ class _AppState extends State<App> {
     );
     chart = NewXYChart(
       primaryAxisController: primaryAxis,
+      padding: const EdgeInsets.all(30),
+    );
+    chart2 = NewXYChart(
+      primaryAxisController: primaryAxis2,
       padding: const EdgeInsets.all(30),
     );
 
@@ -113,8 +138,12 @@ class _AppState extends State<App> {
   late final DynamicBarDataset barDataset2;
   late final SecondaryNumericAxisController<DynamicBarDataset<DynamicBar>>
       secondaryAxis;
+  late final SecondaryNumericAxisController<DynamicBarDataset<DynamicBar>>
+      secondaryAxis2;
   late final PrimaryNumericAxisController primaryAxis;
+  late final PrimaryNumericAxisController primaryAxis2;
   late final NewXYChart chart;
+  late final NewXYChart chart2;
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +157,28 @@ class _AppState extends State<App> {
         useMaterial3: true,
       ),
       home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            height: 400,
-            width: 1000,
-            child: chart,
-          ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Center(
+                child: SizedBox(
+                  // height: 400,
+                  width: 1000,
+                  child: chart2,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: SizedBox(
+                  // height: 400,
+                  width: 1000,
+                  child: chart,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

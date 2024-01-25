@@ -20,12 +20,14 @@ abstract class _AxisController extends ChangeNotifier {
   _AxisController({
     required this.position,
     Range? explicitRange,
-  }) {
-    _explicitRange = explicitRange;
-  }
+    void Function(Range?)? onExplicitRangeChange,
+  })  : _explicitRange = explicitRange,
+        _onExplicitRangeChange = onExplicitRangeChange;
 
   final AxisPosition position;
   Range? _explicitRange;
+
+  void Function(Range?)? _onExplicitRangeChange;
 
   Range? get explicitRange => _explicitRange;
   AxisDirection get direction =>
@@ -37,6 +39,7 @@ abstract class _AxisController extends ChangeNotifier {
     if (range != _explicitRange) {
       _explicitRange = range;
       notifyListeners();
+      _onExplicitRangeChange?.call(_explicitRange);
     }
   }
 
@@ -46,6 +49,7 @@ abstract class _AxisController extends ChangeNotifier {
     required AxisDetails details,
     required Range datasetRange,
     required Color fill,
+    required bool isInverted,
   }) {
     final steps = datasetRange.generateSteps(4);
     final mainAlignmentRange = direction == AxisDirection.horizontal
@@ -86,10 +90,7 @@ abstract class _AxisController extends ChangeNotifier {
 
       double mainAlignmentRangeValue = linearTransform(
         step,
-        rangeA: direction == AxisDirection.vertical &&
-                this is SecondaryAxisController
-            ? datasetRange.inverted()
-            : datasetRange,
+        rangeA: isInverted ? datasetRange.inverted() : datasetRange,
         // rangeA: datasetRange,
         rangeB: mainAlignmentRange,
       );
@@ -107,7 +108,6 @@ abstract class _AxisController extends ChangeNotifier {
       } else {
         mainAlignmentRangeValue -= labelAdjustmentFactor / 2;
       }
-      print(mainAlignmentRangeValue);
 
       // center in cross alignment range (for centering label)
       final crossAlignmentRangeValue =
@@ -119,7 +119,6 @@ abstract class _AxisController extends ChangeNotifier {
 
       stepLabelPainter.paint(canvas, stepLabelOffset);
     }
-    print('----------------');
   }
 }
 
@@ -131,6 +130,7 @@ abstract class PrimaryAxisController extends _AxisController
     required this.isScrollable,
     this.scrollableRange,
     super.explicitRange,
+    super.onExplicitRangeChange,
   });
 
   final bool isScrollable;

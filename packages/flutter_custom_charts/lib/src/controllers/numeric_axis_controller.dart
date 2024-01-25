@@ -7,6 +7,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     super.isScrollable = true,
     super.scrollableRange,
     super.explicitRange,
+    super.onExplicitRangeChange,
     this.details,
   }) {
     for (final secondary in secondaryAxisControllers) {
@@ -25,15 +26,18 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
       secondaryAxisControllers;
 
   ConstrainedArea _shrinkConstraints(ConstrainedArea constraints) {
-    constraints = constraints.shrink(
-      EdgeInsets.only(
-        left: position == AxisPosition.left ? details!.crossAxisPixelSize : 0,
-        top: position == AxisPosition.top ? details!.crossAxisPixelSize : 0,
-        right: position == AxisPosition.right ? details!.crossAxisPixelSize : 0,
-        bottom:
-            position == AxisPosition.bottom ? details!.crossAxisPixelSize : 0,
-      ),
-    );
+    if (details != null) {
+      constraints = constraints.shrink(
+        EdgeInsets.only(
+          left: position == AxisPosition.left ? details!.crossAxisPixelSize : 0,
+          top: position == AxisPosition.top ? details!.crossAxisPixelSize : 0,
+          right:
+              position == AxisPosition.right ? details!.crossAxisPixelSize : 0,
+          bottom:
+              position == AxisPosition.bottom ? details!.crossAxisPixelSize : 0,
+        ),
+      );
+    }
     for (final secondary in secondaryAxisControllers) {
       if (secondary.details != null) {
         constraints = constraints.shrink(
@@ -163,6 +167,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
         ),
         details: details!,
         datasetRange: explicitRange ?? primaryAxisDatasetRange,
+        isInverted: false,
         fill: Colors.red,
       );
     }
@@ -180,6 +185,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           details: secondaryAxis.details!,
           datasetRange:
               secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+          isInverted: isSecondaryAxisInverted(position),
           fill: Colors.red,
         );
       }

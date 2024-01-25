@@ -207,3 +207,14 @@ ConstrainedArea determineAxisDetailsConstraints({
       );
   }
 }
+
+bool isSecondaryAxisInverted(AxisPosition primary) {
+  switch (primary) {
+    case AxisPosition.left:
+    case AxisPosition.top:
+      return false;
+    case AxisPosition.right:
+    case AxisPosition.bottom:
+      return true;
+  }
+}
