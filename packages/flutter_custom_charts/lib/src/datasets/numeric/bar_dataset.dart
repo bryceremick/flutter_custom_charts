@@ -1,5 +1,68 @@
 part of flutter_custom_charts;
 
+abstract class PlottableXYEntity {
+  const PlottableXYEntity({
+    required this.primaryAxisMin,
+  });
+
+  final double primaryAxisMin;
+}
+
+class _PlottableXYEntry {
+  const _PlottableXYEntry({
+    required this.key,
+    required this.values,
+  });
+
+  final double key;
+  final List<PlottableXYEntity> values;
+}
+
+class _XYChartDatasetMap extends ChangeNotifier {
+  final List<_PlottableXYEntry> _entries = [];
+
+  int? _firstIndexWithin(Range range) {
+    int startIndex = _binarySearch(range.min);
+
+    if (startIndex < _entries.length &&
+        _entries[startIndex].key >= range.min &&
+        _entries[startIndex].key <= range.max) {
+      if (startIndex > 0) {
+        // decrementing allows us to have a "scrolling" like effect
+        // by painting the first bar outside of the viewport
+        startIndex--;
+      }
+
+      return startIndex;
+    }
+
+    return null;
+  }
+
+  int _binarySearch(double key) {
+    int low = 0;
+    int high = _entries.length - 1;
+
+    while (low <= high) {
+      int mid = low + ((high - low) >> 1);
+      if (_entries[mid].key < key) {
+        low = mid + 1;
+      } else if (_entries[mid].key > key) {
+        high = mid - 1;
+      } else {
+        // Adjust to find the first occurrence of the target
+        while (mid > 0 && _entries[mid - 1].key == key) {
+          mid--;
+        }
+        return mid;
+      }
+    }
+
+    // not found
+    return low;
+  }
+}
+
 abstract class BarDataset<T extends StaticBar> extends ChangeNotifier {
   final List<T> _bars = [];
   Range? _secondaryAxisRange;
