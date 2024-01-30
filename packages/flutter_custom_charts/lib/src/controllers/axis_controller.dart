@@ -1,19 +1,36 @@
 part of flutter_custom_charts;
 
 class AxisDetails {
-  AxisDetails({
+  const AxisDetails({
     required this.stepLabelFormatter,
-    this.crossAxisPixelSize = 32,
+    this.steps = 6,
+    this.crossAlignmentPixelSize = 32,
     this.name,
     this.nameLabelStyle = const TextStyle(fontSize: 12, color: Colors.white),
     this.stepLabelStyle = const TextStyle(fontSize: 12, color: Colors.white),
+    this.gridStyle = const AxisGridStyle(
+      color: Colors.grey,
+      strokeWidth: 1,
+    ),
   });
 
   final String? name;
   final TextStyle nameLabelStyle;
   final TextStyle stepLabelStyle;
   final String Function(double value) stepLabelFormatter;
-  final double crossAxisPixelSize;
+  final double crossAlignmentPixelSize;
+  final int steps;
+  final AxisGridStyle? gridStyle;
+}
+
+class AxisGridStyle {
+  const AxisGridStyle({
+    required this.color,
+    required this.strokeWidth,
+  });
+
+  final Color color;
+  final double strokeWidth;
 }
 
 abstract class _AxisController extends ChangeNotifier {
@@ -27,7 +44,7 @@ abstract class _AxisController extends ChangeNotifier {
   final AxisPosition position;
   Range? _explicitRange;
 
-  void Function(Range?)? _onExplicitRangeChange;
+  final void Function(Range?)? _onExplicitRangeChange;
 
   Range? get explicitRange => _explicitRange;
   AxisDirection get direction =>
@@ -43,39 +60,44 @@ abstract class _AxisController extends ChangeNotifier {
     }
   }
 
+  Range _getMainAlignmentCanvasRange(ConstrainedArea constraints) =>
+      direction == AxisDirection.horizontal
+          ? Range(
+              min: constraints.xMin,
+              max: constraints.xMax,
+            )
+          : Range(
+              min: constraints.yMin,
+              max: constraints.yMax,
+            );
+
+  Range _getCrossAlignmentCanvasRange(ConstrainedArea constraints) =>
+      direction == AxisDirection.horizontal
+          ? Range(
+              min: constraints.yMin,
+              max: constraints.yMax,
+            )
+          : Range(
+              min: constraints.xMin,
+              max: constraints.xMax,
+            );
+
   void _paintAxisDetails(
     Canvas canvas, {
     required ConstrainedArea constraints,
     required AxisDetails details,
     required Range datasetRange,
-    required Color fill,
     required bool isInverted,
   }) {
-    final steps = datasetRange.generateSteps(4);
-    final mainAlignmentRange = direction == AxisDirection.horizontal
-        ? Range(
-            min: constraints.xMin,
-            max: constraints.xMax,
-          )
-        : Range(
-            min: constraints.yMin,
-            max: constraints.yMax,
-          );
-    final crossAlignmentRange = direction == AxisDirection.horizontal
-        ? Range(
-            min: constraints.yMin,
-            max: constraints.yMax,
-          )
-        : Range(
-            min: constraints.xMin,
-            max: constraints.xMax,
-          );
+    final steps = datasetRange.generateSteps(details.steps);
+    final mainAlignmentRange = _getMainAlignmentCanvasRange(constraints);
+    final crossAlignmentRange = _getCrossAlignmentCanvasRange(constraints);
 
     // background
     paintRectangle(
       canvas,
       constraints: constraints,
-      fill: fill,
+      fill: Colors.transparent,
     );
 
     for (final step in steps) {
@@ -88,7 +110,7 @@ abstract class _AxisController extends ChangeNotifier {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      double mainAlignmentRangeValue = linearTransform(
+      double mainAlignmentRangeCanvasValue = linearTransform(
         step,
         rangeA: isInverted ? datasetRange.inverted() : datasetRange,
         // rangeA: datasetRange,
@@ -100,24 +122,64 @@ abstract class _AxisController extends ChangeNotifier {
           : stepLabelPainter.height);
 
       // prevent painting step label out of bounds
-      if (mainAlignmentRangeValue >= mainAlignmentRange.max) {
-        mainAlignmentRangeValue =
+      if (mainAlignmentRangeCanvasValue >= mainAlignmentRange.max) {
+        mainAlignmentRangeCanvasValue =
             mainAlignmentRange.max - labelAdjustmentFactor;
-      } else if (mainAlignmentRangeValue <= mainAlignmentRange.min) {
-        mainAlignmentRangeValue = mainAlignmentRange.min;
+      } else if (mainAlignmentRangeCanvasValue <= mainAlignmentRange.min) {
+        mainAlignmentRangeCanvasValue = mainAlignmentRange.min;
       } else {
-        mainAlignmentRangeValue -= labelAdjustmentFactor / 2;
+        mainAlignmentRangeCanvasValue -= labelAdjustmentFactor / 2;
       }
 
       // center in cross alignment range (for centering label)
-      final crossAlignmentRangeValue =
+      final crossAlignmentRangeCanvasValue =
           crossAlignmentRange.midpoint() - (stepLabelPainter.height / 2);
 
       final stepLabelOffset = direction == AxisDirection.horizontal
-          ? Offset(mainAlignmentRangeValue, crossAlignmentRangeValue)
-          : Offset(crossAlignmentRangeValue, mainAlignmentRangeValue);
+          ? Offset(
+              mainAlignmentRangeCanvasValue, crossAlignmentRangeCanvasValue)
+          : Offset(
+              crossAlignmentRangeCanvasValue, mainAlignmentRangeCanvasValue);
 
       stepLabelPainter.paint(canvas, stepLabelOffset);
+    }
+  }
+
+  void _paintAxisGrid(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required AxisDetails details,
+    required Range datasetRange,
+  }) {
+    if (details.gridStyle == null) {
+      return;
+    }
+
+    final steps = datasetRange.generateSteps(details.steps);
+    final mainAlignmentCanvasRange = _getMainAlignmentCanvasRange(constraints);
+
+    for (final step in steps) {
+      final mainAlignmentRangeCanvasValue = linearTransform(
+        step,
+        rangeA: datasetRange,
+        rangeB: mainAlignmentCanvasRange,
+      );
+
+      final p1 = direction == AxisDirection.horizontal
+          ? Offset(mainAlignmentRangeCanvasValue, constraints.yMin)
+          : Offset(constraints.xMin, mainAlignmentRangeCanvasValue);
+
+      final p2 = direction == AxisDirection.horizontal
+          ? Offset(mainAlignmentRangeCanvasValue, constraints.yMax)
+          : Offset(constraints.xMax, mainAlignmentRangeCanvasValue);
+
+      canvas.drawLine(
+        p1,
+        p2,
+        Paint()
+          ..color = details.gridStyle!.color
+          ..strokeWidth = details.gridStyle!.strokeWidth,
+      );
     }
   }
 }

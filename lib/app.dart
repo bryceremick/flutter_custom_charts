@@ -19,7 +19,7 @@ class _AppState extends State<App> {
     barDataset1 = DynamicBarDataset()
       ..addAll(
         List.generate(
-          200,
+          1000000,
           (index) => DynamicBar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
@@ -29,30 +29,28 @@ class _AppState extends State<App> {
             //     index % 2 == 0 ? rng.nextInt(10).toDouble() + 3 : 0,
             secondaryAxisMin: 0,
             secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
-            fill: Colors.blue,
-            label: Label(
-              text: '$index',
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-              alignment: Alignment.bottomCenter,
-              // padding: const EdgeInsets.only(bottom: 5),
-            ),
+            fill: const Color.fromRGBO(33, 150, 243, 0.8),
           ),
         ),
       );
-    // barDataset2 = DynamicBarDataset()
-    //   ..addAll(
-    //     List.generate(
-    //       200,
-    //       (index) => DynamicBar(
-    //         primaryAxisMin: index * 10,
-    //         primaryAxisMax: ((index + 1) * 10) - 1,
-    //         secondaryAxisMin: 2,
-    //         // secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
-    //         secondaryAxisMax: 12,
-    //         fill: Colors.blue,
-    //       ),
-    //     ),
-    //   );
+
+    barDataset2 = DynamicBarDataset()
+      ..addAll(
+        List.generate(
+          1000000,
+          (index) => DynamicBar(
+            primaryAxisMin: index * 30,
+            primaryAxisMax: ((index + 1) * 30) - 1,
+            // secondaryAxisMin:
+            //     index % 2 == 0 ? 0 : (rng.nextInt(10).toDouble() + 3) * -1,
+            // secondaryAxisMax:
+            //     index % 2 == 0 ? rng.nextInt(10).toDouble() + 3 : 0,
+            secondaryAxisMin: 0,
+            secondaryAxisMax: rng.nextInt(10).toDouble() + 10,
+            fill: const Color.fromRGBO(33, 150, 243, 0.8),
+          ),
+        ),
+      );
 
     secondaryAxis = SecondaryNumericAxisController(
       barDatasets: [barDataset1],
@@ -63,18 +61,19 @@ class _AppState extends State<App> {
       // explicitRange: Range(min: -15, max: 15),
     );
     secondaryAxis2 = SecondaryNumericAxisController(
-      barDatasets: [],
-      position: AxisPosition.right,
+      barDatasets: [barDataset2],
+      position: AxisPosition.left,
       explicitRange: Range(min: 0, max: 20),
       details: AxisDetails(
         stepLabelFormatter: (value) => '${value.round()}',
+        gridStyle: null,
       ),
       // explicitRange: Range(min: 0, max: 20),
     );
     primaryAxis = PrimaryNumericAxisController(
-      secondaryAxisControllers: [secondaryAxis, secondaryAxis2],
+      secondaryAxisControllers: [secondaryAxis],
       position: AxisPosition.bottom,
-      explicitRange: Range(min: 1000, max: 1500),
+      explicitRange: Range(min: 0, max: 600),
       // scrollableRange: Range(min: -100, max: 2100),
       details: AxisDetails(
         stepLabelFormatter: (value) => '${value.round()}',
@@ -84,7 +83,7 @@ class _AppState extends State<App> {
       },
     );
     primaryAxis2 = PrimaryNumericAxisController(
-      secondaryAxisControllers: [secondaryAxis, secondaryAxis2],
+      secondaryAxisControllers: [secondaryAxis2],
       position: AxisPosition.bottom,
       explicitRange: Range(min: 1000, max: 1500),
       // scrollableRange: Range(min: -100, max: 2100),
@@ -94,27 +93,28 @@ class _AppState extends State<App> {
     );
     chart = NewXYChart(
       primaryAxisController: primaryAxis,
-      padding: const EdgeInsets.all(30),
+      // padding: const EdgeInsets.all(30),
     );
     chart2 = NewXYChart(
       primaryAxisController: primaryAxis2,
-      padding: const EdgeInsets.all(30),
+      // padding: const EdgeInsets.all(30),
     );
 
-    // Future.delayed(const Duration(seconds: 5), () {
-    //   primaryAxis.zoomTo(
-    //     Range(min: -200, max: 600),
-    //     const Duration(seconds: 3),
-    //     Curves.linear,
-    //   );
-    // });
-    // Future.delayed(const Duration(seconds: 10), () {
-    //   primaryAxis.zoomTo(
-    //     Range(min: 1800, max: 2200),
-    //     const Duration(seconds: 3),
-    //     Curves.linear,
-    //   );
-    // });
+    Future.delayed(const Duration(seconds: 5), () {
+      primaryAxis.animateTo(
+        Range(min: 0, max: 100),
+        const Duration(seconds: 3),
+        Curves.linear,
+      );
+    });
+
+    Future.delayed(const Duration(seconds: 10), () {
+      primaryAxis.animateTo(
+        Range(min: 1500, max: 2000),
+        const Duration(seconds: 5),
+        Curves.linear,
+      );
+    });
 
     // Future.delayed(const Duration(seconds: 10), () {
     //   primaryAxis.zoomTo(
@@ -161,19 +161,28 @@ class _AppState extends State<App> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
+              flex: 5,
               child: Center(
                 child: SizedBox(
                   // height: 400,
-                  width: 1000,
+                  // width: 1000,
                   child: chart2,
                 ),
               ),
             ),
+            const Expanded(
+              flex: 1,
+              child: SizedBox(
+                  // height: 400,
+                  // width: 1000,
+                  ),
+            ),
             Expanded(
+              flex: 5,
               child: Center(
                 child: SizedBox(
                   // height: 400,
-                  width: 1000,
+                  // width: 1000,
                   child: chart,
                 ),
               ),

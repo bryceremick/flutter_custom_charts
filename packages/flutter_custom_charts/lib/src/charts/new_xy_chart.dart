@@ -5,7 +5,7 @@ class NewXYChart extends StatelessWidget {
     super.key,
     required this.primaryAxisController,
     this.padding = EdgeInsets.zero,
-    this.fill = Colors.black87,
+    this.fill = Colors.transparent,
   });
   final PrimaryAxisController primaryAxisController;
   final EdgeInsets padding;

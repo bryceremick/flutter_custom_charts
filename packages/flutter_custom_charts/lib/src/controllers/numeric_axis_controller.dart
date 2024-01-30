@@ -15,52 +15,10 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
       secondary.addListener(notifyListeners);
     }
   }
-  // add an axis max value. If set, the axis will not scroll.
-  // changing this value is the only time i need to loop through bars
-  // to set the primary axis constraints (xMin, xMax)
-  //
-  // if axis is scrollable, need to know the pixel per unit ratio
 
   AxisDetails? details;
   final List<SecondaryNumericAxisController<DynamicBarDataset>>
       secondaryAxisControllers;
-
-  ConstrainedArea _shrinkConstraints(ConstrainedArea constraints) {
-    if (details != null) {
-      constraints = constraints.shrink(
-        EdgeInsets.only(
-          left: position == AxisPosition.left ? details!.crossAxisPixelSize : 0,
-          top: position == AxisPosition.top ? details!.crossAxisPixelSize : 0,
-          right:
-              position == AxisPosition.right ? details!.crossAxisPixelSize : 0,
-          bottom:
-              position == AxisPosition.bottom ? details!.crossAxisPixelSize : 0,
-        ),
-      );
-    }
-    for (final secondary in secondaryAxisControllers) {
-      if (secondary.details != null) {
-        constraints = constraints.shrink(
-          EdgeInsets.only(
-            left: secondary.position == AxisPosition.left
-                ? secondary.details!.crossAxisPixelSize
-                : 0,
-            top: secondary.position == AxisPosition.top
-                ? secondary.details!.crossAxisPixelSize
-                : 0,
-            right: secondary.position == AxisPosition.right
-                ? secondary.details!.crossAxisPixelSize
-                : 0,
-            bottom: secondary.position == AxisPosition.bottom
-                ? secondary.details!.crossAxisPixelSize
-                : 0,
-          ),
-        );
-      }
-    }
-
-    return constraints;
-  }
 
   @override
   void paint(
@@ -68,20 +26,29 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     required ConstrainedArea constraints,
   }) {
     super.constraints = _shrinkConstraints(constraints);
-    final primaryAxisDatasetRange = _implicitDataRange;
-    final primaryAxisCanvasRange = direction == AxisDirection.horizontal
-        ? Range(
-            min: super.constraints.xMin,
-            max: super.constraints.xMax,
-          )
-        : Range(
-            min: super.constraints.yMin,
-            max: super.constraints.yMax,
-          );
+    canvas.save();
+    canvas.clipRect(
+      Rect.fromLTRB(
+        super.constraints.xMin,
+        super.constraints.yMin,
+        super.constraints.xMax,
+        super.constraints.yMax,
+      ),
+    );
+    _paintChartGrid(canvas);
+    _paintChartData(canvas);
+    canvas.restore();
+    _paintChartAxesDetails(canvas);
+  }
 
+  void _paintChartData(Canvas canvas) {
+    final primaryAxisDatasetRange = _implicitDataRange;
     if (primaryAxisDatasetRange == null) {
       return;
     }
+
+    final primaryAxisCanvasRange =
+        _getMainAlignmentCanvasRange(super.constraints);
 
     if (explicitRange != null &&
         !explicitRange!.isWithin(scrollableRange ?? primaryAxisDatasetRange)) {
@@ -92,17 +59,6 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
 
     for (final secondaryAxis in secondaryAxisControllers) {
       final secondaryAxisDatasetRange = secondaryAxis._implicitDataRange;
-      final secondaryAxisCanvasRange =
-          secondaryAxis.direction == AxisDirection.horizontal
-              ? Range(
-                  min: super.constraints.xMin,
-                  max: super.constraints.xMax,
-                )
-              : Range(
-                  min: super.constraints.yMin,
-                  max: super.constraints.yMax,
-                );
-
       if (secondaryAxisDatasetRange == null) {
         continue;
       }
@@ -121,7 +77,11 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           ),
         );
 
-        // binary search for the first bar to paint
+        print(primaryAxisCanvasRange);
+        print(primaryAxisDataSetRange);
+        print('------------');
+
+        // binary search for the first bar to paint in viewport
         int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
         if (index == null) {
           break;
@@ -144,17 +104,16 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
             constraints: super.constraints,
           );
           bar.paint(canvas, constraints: barConstraints);
-//           print('''
-// $index
-// primaryAxisBarRange: ${Range(min: bar.primaryAxisMin, max: bar.primaryAxisMax)}
-// secondaryAxisBarRange: ${Range(min: bar.secondaryAxisMin, max: bar.secondaryAxisMax)}
-// Transformed: $barConstraints
-// -------------------------
-// ''');
           index++;
           if (index >= dataset.data.length) break;
         }
       }
+    }
+  }
+
+  void _paintChartAxesDetails(Canvas canvas) {
+    if (explicitRange == null && _implicitDataRange == null) {
+      return;
     }
 
     if (details != null) {
@@ -163,33 +122,108 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
         constraints: determineAxisDetailsConstraints(
           constraints: super.constraints,
           position: position,
-          detailsCrossAxisPixelSize: details!.crossAxisPixelSize,
+          detailsCrossAxisPixelSize: details!.crossAlignmentPixelSize,
         ),
         details: details!,
-        datasetRange: explicitRange ?? primaryAxisDatasetRange,
+        datasetRange: explicitRange ?? _implicitDataRange!,
         isInverted: false,
-        fill: Colors.red,
       );
     }
 
     for (final secondaryAxis in secondaryAxisControllers) {
-      if (secondaryAxis.details != null) {
-        secondaryAxis._paintAxisDetails(
-          canvas,
-          constraints: determineAxisDetailsConstraints(
-            constraints: super.constraints,
-            position: secondaryAxis.position,
-            detailsCrossAxisPixelSize:
-                secondaryAxis.details!.crossAxisPixelSize,
+      if (secondaryAxis.details == null ||
+          (secondaryAxis.explicitRange == null &&
+              secondaryAxis._implicitDataRange == null)) {
+        continue;
+      }
+
+      secondaryAxis._paintAxisDetails(
+        canvas,
+        constraints: determineAxisDetailsConstraints(
+          constraints: super.constraints,
+          position: secondaryAxis.position,
+          detailsCrossAxisPixelSize:
+              secondaryAxis.details!.crossAlignmentPixelSize,
+        ),
+        details: secondaryAxis.details!,
+        datasetRange:
+            secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+        isInverted: isSecondaryAxisInverted(position),
+      );
+    }
+  }
+
+  void _paintChartGrid(Canvas canvas) {
+    if (explicitRange == null && _implicitDataRange == null) {
+      return;
+    }
+
+    if (details != null) {
+      _paintAxisGrid(
+        canvas,
+        constraints: super.constraints,
+        details: details!,
+        datasetRange: explicitRange ?? _implicitDataRange!,
+      );
+    }
+
+    for (final secondaryAxis in secondaryAxisControllers) {
+      if (secondaryAxis.details == null ||
+          (secondaryAxis.explicitRange == null &&
+              secondaryAxis._implicitDataRange == null)) {
+        continue;
+      }
+      secondaryAxis._paintAxisGrid(
+        canvas,
+        constraints: super.constraints,
+        details: secondaryAxis.details!,
+        datasetRange:
+            secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+      );
+    }
+  }
+
+  ConstrainedArea _shrinkConstraints(ConstrainedArea constraints) {
+    if (details != null) {
+      constraints = constraints.shrink(
+        EdgeInsets.only(
+          left: position == AxisPosition.left
+              ? details!.crossAlignmentPixelSize
+              : 0,
+          top: position == AxisPosition.top
+              ? details!.crossAlignmentPixelSize
+              : 0,
+          right: position == AxisPosition.right
+              ? details!.crossAlignmentPixelSize
+              : 0,
+          bottom: position == AxisPosition.bottom
+              ? details!.crossAlignmentPixelSize
+              : 0,
+        ),
+      );
+    }
+    for (final secondary in secondaryAxisControllers) {
+      if (secondary.details != null) {
+        constraints = constraints.shrink(
+          EdgeInsets.only(
+            left: secondary.position == AxisPosition.left
+                ? secondary.details!.crossAlignmentPixelSize
+                : 0,
+            top: secondary.position == AxisPosition.top
+                ? secondary.details!.crossAlignmentPixelSize
+                : 0,
+            right: secondary.position == AxisPosition.right
+                ? secondary.details!.crossAlignmentPixelSize
+                : 0,
+            bottom: secondary.position == AxisPosition.bottom
+                ? secondary.details!.crossAlignmentPixelSize
+                : 0,
           ),
-          details: secondaryAxis.details!,
-          datasetRange:
-              secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
-          isInverted: isSecondaryAxisInverted(position),
-          fill: Colors.red,
         );
       }
     }
+
+    return constraints;
   }
 
   @override
@@ -208,7 +242,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     return range;
   }
 
-  void zoomTo(Range to, Duration duration, Curve curve) {
+  void animateTo(Range to, Duration duration, Curve curve) {
     if (_implicitDataRange == null) {
       return;
     }

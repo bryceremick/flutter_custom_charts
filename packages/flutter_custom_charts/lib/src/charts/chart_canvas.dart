@@ -12,18 +12,23 @@ class ChartCanvas extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // debugPrint('PAINTING');
     final constraints = ConstrainedArea(
       xMin: 0,
       xMax: size.width,
       yMin: 0,
       yMax: size.height,
     );
+
+    // canvas background
     paintRectangle(canvas, constraints: constraints, fill: fill);
+
+    // chart
     primaryAxisController.paint(
       canvas,
       constraints: constraints.shrink(padding),
     );
+
+    // chart padding - should i remove this?
     _paintPadding(canvas, constraints, padding, Colors.green);
   }
 
