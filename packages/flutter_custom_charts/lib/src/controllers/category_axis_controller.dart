@@ -20,7 +20,7 @@ class PrimaryCategoryAxisController extends PrimaryAxisController {
   //
   // if axis is scrollable, need to know the pixel per unit ratio
 
-  final List<SecondaryNumericAxisController<StaticBarDataset>>
+  final List<SecondaryNumericAxisController<BarDataset>>
       secondaryAxisControllers;
 
   @override

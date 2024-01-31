@@ -16,11 +16,11 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    barDataset1 = DynamicBarDataset()
+    barDataset1 = BarDataset()
       ..addAll(
         List.generate(
           1000000,
-          (index) => DynamicBar(
+          (index) => Bar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
             // secondaryAxisMin:
@@ -34,11 +34,11 @@ class _AppState extends State<App> {
         ),
       );
 
-    barDataset2 = DynamicBarDataset()
+    barDataset2 = BarDataset()
       ..addAll(
         List.generate(
           1000000,
-          (index) => DynamicBar(
+          (index) => Bar(
             primaryAxisMin: index * 30,
             primaryAxisMax: ((index + 1) * 30) - 1,
             // secondaryAxisMin:
@@ -134,12 +134,10 @@ class _AppState extends State<App> {
     // });
   }
 
-  late final DynamicBarDataset barDataset1;
-  late final DynamicBarDataset barDataset2;
-  late final SecondaryNumericAxisController<DynamicBarDataset<DynamicBar>>
-      secondaryAxis;
-  late final SecondaryNumericAxisController<DynamicBarDataset<DynamicBar>>
-      secondaryAxis2;
+  late final BarDataset barDataset1;
+  late final BarDataset barDataset2;
+  late final SecondaryNumericAxisController secondaryAxis;
+  late final SecondaryNumericAxisController secondaryAxis2;
   late final PrimaryNumericAxisController primaryAxis;
   late final PrimaryNumericAxisController primaryAxis2;
   late final NewXYChart chart;

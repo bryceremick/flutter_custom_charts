@@ -2,8 +2,10 @@ part of flutter_custom_charts;
 
 // TODO - change secondaryAxisMax and secondaryAxisMin to a Range instance
 
-class StaticBar extends ConstrainedPainter {
-  StaticBar({
+class Bar extends PlottableXYEntity with ConstrainedPainter {
+  Bar({
+    required super.primaryAxisMin,
+    required this.primaryAxisMax,
     required this.secondaryAxisMax,
     this.secondaryAxisMin = 0,
     this.fill = Colors.blue,
@@ -14,6 +16,9 @@ class StaticBar extends ConstrainedPainter {
     if (secondaryAxisMin >= secondaryAxisMax) {
       throw XYChartException('Bar yMin must be less than yMax');
     }
+    if (primaryAxisMin >= primaryAxisMax) {
+      throw XYChartException('Bar xMin must be less than xMax');
+    }
   }
 
   final Color? fill;
@@ -22,9 +27,12 @@ class StaticBar extends ConstrainedPainter {
   final EdgeInsets padding = const EdgeInsets.all(0);
   final double secondaryAxisMax;
   final double secondaryAxisMin;
+
+  final double primaryAxisMax;
   final List<Line> lines;
 
   double get perceivedHeight => (secondaryAxisMax - secondaryAxisMin).abs();
+  double get perceivedWidth => (primaryAxisMax - primaryAxisMin).abs();
 
   // bool isOutOfBounds(double x, double y) {
   //   return constraints.isOutOfBoundsX(x) ||

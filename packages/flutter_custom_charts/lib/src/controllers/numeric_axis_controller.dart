@@ -17,7 +17,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 
   AxisDetails? details;
-  final List<SecondaryNumericAxisController<DynamicBarDataset>>
+  final List<SecondaryNumericAxisController<BarDataset>>
       secondaryAxisControllers;
 
   @override
@@ -77,20 +77,13 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           ),
         );
 
-        print(primaryAxisCanvasRange);
-        print(primaryAxisDataSetRange);
-        print('------------');
-
         // binary search for the first bar to paint in viewport
         int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
-        if (index == null) {
-          break;
-        }
 
         // paint bars within chart viewport
-        while (dataset.data[index!].primaryAxisMin <=
+        while (dataset._data[index!].primaryAxisMin <=
             (primaryAxisDataSetRange.max + 1)) {
-          final bar = dataset.data[index];
+          final bar = dataset._data[index];
           final barConstraints = translateBarToCanvas(
             primaryAxisBarRange:
                 Range(min: bar.primaryAxisMin, max: bar.primaryAxisMax),
@@ -105,7 +98,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           );
           bar.paint(canvas, constraints: barConstraints);
           index++;
-          if (index >= dataset.data.length) break;
+          if (index >= dataset._data.length) break;
         }
       }
     }
@@ -231,10 +224,10 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     Range? range;
     for (final secondaryAxis in secondaryAxisControllers) {
       for (final dataset in secondaryAxis.barDatasets) {
-        if (dataset._primaryAxisRange != null) {
-          range ??= dataset._primaryAxisRange;
-          range!.min = min(range.min, dataset._primaryAxisRange!.min);
-          range.max = max(range.max, dataset._primaryAxisRange!.max);
+        if (dataset.primaryAxisRange != null) {
+          range ??= dataset.primaryAxisRange!;
+          range.min = min(range.min, dataset.primaryAxisRange!.min);
+          range.max = max(range.max, dataset.primaryAxisRange!.max);
         }
       }
     }
@@ -309,7 +302,7 @@ class SecondaryNumericAxisController<T extends BarDataset>
     this.details,
   }) {
     for (final dataset in barDatasets) {
-      dataset.addListener(notifyListeners);
+      dataset._plottableDataset.addListener(notifyListeners);
     }
   }
 
@@ -319,10 +312,10 @@ class SecondaryNumericAxisController<T extends BarDataset>
   Range? get _implicitDataRange {
     Range? range;
     for (final dataset in barDatasets) {
-      if (dataset._secondaryAxisRange != null) {
-        range ??= dataset._secondaryAxisRange;
-        range!.min = min(range.min, dataset._secondaryAxisRange!.min);
-        range.max = max(range.max, dataset._secondaryAxisRange!.max);
+      if (dataset.secondaryAxisRange != null) {
+        range ??= dataset.secondaryAxisRange!;
+        range.min = min(range.min, dataset.secondaryAxisRange!.min);
+        range.max = max(range.max, dataset.secondaryAxisRange!.max);
       }
     }
     return range;
@@ -332,7 +325,7 @@ class SecondaryNumericAxisController<T extends BarDataset>
   void dispose() {
     super.dispose();
     for (final dataset in barDatasets) {
-      dataset.dispose();
+      dataset._plottableDataset.dispose();
     }
   }
 }
