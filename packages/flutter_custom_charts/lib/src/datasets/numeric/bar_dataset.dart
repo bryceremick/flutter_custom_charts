@@ -1,197 +1,113 @@
 part of flutter_custom_charts;
 
-abstract class BarDataset<T extends StaticBar> extends ChangeNotifier {
-  final List<T> _bars = [];
+abstract mixin class _DatasetMutations<T extends PlottableXYEntity> {
+  void add(T entity);
+  void addAll(List<T> entities);
+  void insert(int index, T entity);
+  void replace(int index, T entity);
+  void clear();
+  int? _firstIndexWithin(Range range);
+}
+
+class _XYChartDataset<T extends PlottableXYEntity> extends ChangeNotifier
+    with _DatasetMutations<T> {
+  final List<T> _data = [];
+  Range? _primaryAxisRange;
   Range? _secondaryAxisRange;
 
-  List<T> get data => _bars;
+  @override
+  void add(T entity) {
+    // compare to left
+    if (_data.isNotEmpty && entity.primaryAxisMin < _data.last.primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToLeft(
+          entity.primaryAxisMin, _data.last.primaryAxisMin);
+    }
+    _data.add(entity);
+  }
 
-  void add(T bar);
-  void addAll(List<T> bars, {bool sort = true});
-  void insert(int index, T bar);
-  void replace(int index, T bar);
-  void clear();
-
-  void _computeSecondaryAxisBounds(List<T> bars) {
-    if (bars.isEmpty) {
+  @override
+  void addAll(List<T> entities) {
+    if (entities.isEmpty) {
       return;
     }
+    entities.sort((a, b) => a.primaryAxisMin.compareTo(b.primaryAxisMin));
 
-    _secondaryAxisRange ??= Range(
-      min: bars.first.secondaryAxisMin,
-      max: bars.first.secondaryAxisMax,
-    );
-
-    for (int i = 0; i < bars.length; i++) {
-      _secondaryAxisRange!.min =
-          min(_secondaryAxisRange!.min, bars[i].secondaryAxisMin);
-      _secondaryAxisRange!.max =
-          max(_secondaryAxisRange!.max, bars[i].secondaryAxisMax);
-    }
-  }
-}
-
-class StaticBarDataset<T extends StaticBar> extends BarDataset<T> {
-  @override
-  void add(T bar) {
-    _bars.add(bar);
-    notifyListeners();
-  }
-
-  @override
-  void addAll(List<T> bars, {bool sort = true}) {
-    _bars.addAll(bars);
-    notifyListeners();
-  }
-
-  @override
-  void insert(int index, T bar) {
-    _bars.insert(index, bar);
-    notifyListeners();
-  }
-
-  @override
-  void replace(int index, T bar) {
-    _bars[index] = bar;
-    notifyListeners();
-  }
-
-  @override
-  void clear() {
-    _bars.clear();
-    notifyListeners();
-  }
-}
-
-class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
-  Range? _primaryAxisRange;
-
-  @override
-  void add(T bar) {
-    if (_bars.isNotEmpty && bar.primaryAxisMin <= _bars.last.primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The added bar must have a greater primaryAxisMin than the last bar in the existing dataset.');
-    }
-    _bars.add(bar);
-    _computeDatasetBounds([bar]);
-    notifyListeners();
-  }
-
-  @override
-  void addAll(List<T> bars, {bool sort = true}) {
-    if (bars.isEmpty) {
-      return;
-    }
-    if (sort) {
-      bars.sort((a, b) => a.primaryAxisMin.compareTo(b.primaryAxisMin));
+    // compare to left
+    if (_data.isNotEmpty &&
+        entities.first.primaryAxisMin < _data.last.primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToLeft(
+          entities.first.primaryAxisMin, _data.last.primaryAxisMin);
     }
 
-    if (_bars.isNotEmpty &&
-        bars.first.primaryAxisMin <= _bars.last.primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The first bar in the added list must have a greater primaryAxisMin than the last bar in the existing dataset.');
-    }
-
-    _bars.addAll(bars);
-    _computeDatasetBounds(bars);
-    notifyListeners();
+    _data.addAll(entities);
   }
 
   @override
-  void insert(int index, T bar) {
-    if (_bars.isNotEmpty && bar.primaryAxisMin >= _bars[index].primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The inserted bar must have an primaryAxisMin smaller than the bar to it\'s right in the existing dataset.');
+  void insert(int index, T entity) {
+    // compare to right
+    if (_data.isNotEmpty &&
+        entity.primaryAxisMin > _data[index].primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToRight(
+          entity.primaryAxisMin, _data[index].primaryAxisMin);
     }
 
-    if (_bars.length > 1 &&
-        bar.primaryAxisMin <= _bars[index - 1].primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The inserted bar must have an primaryAxisMin greater than the bar to it\'s left in the existing dataset.');
+    // compare to left
+    if (_data.length > 1 &&
+        entity.primaryAxisMin < _data[index - 1].primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToLeft(
+          entity.primaryAxisMin, _data[index - 1].primaryAxisMin);
     }
-    _bars.insert(index, bar);
-    _computeDatasetBounds([bar]);
-    notifyListeners();
+    _data.insert(index, entity);
   }
 
   @override
-  void replace(int index, T bar) {
-    if (_bars.isEmpty) {
+  void replace(int index, T entity) {
+    if (_data.isEmpty) {
       throw XYChartException(
           'Cannot replace a bar in an empty dataset. Add a bar first.');
     }
 
-    if (index < 0 || index > _bars.length - 1) {
+    if (index < 0 || index > _data.length - 1) {
       throw XYChartException(
-          'Cannot replace a bar at index $index. Index must be between 0 and ${_bars.length - 1}');
+          'Cannot replace a bar at index $index. Index must be between 0 and ${_data.length - 1}');
     }
 
     // TODO - verify this logic
-    if (index < _bars.length - 1 &&
-        bar.primaryAxisMin >= _bars[index + 1].primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The inserted bar must have an primaryAxisMin smaller than the bar to it\'s right in the existing dataset.');
+    if (index < _data.length - 1 &&
+        entity.primaryAxisMin > _data[index + 1].primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToRight(
+          entity.primaryAxisMin, _data[index + 1].primaryAxisMin);
     }
 
     // TODO - verify this logic
-    if (index > 0 && bar.primaryAxisMin <= _bars[index - 1].primaryAxisMin) {
-      throw XYChartException(
-          'Cannot add out of order bars on a primary numeric axis. The inserted bar must have an primaryAxisMin greater than the bar to it\'s left in the existing dataset.');
+    if (index > 0 && entity.primaryAxisMin < _data[index - 1].primaryAxisMin) {
+      throw OutOfOrderException.fromCompareToLeft(
+          entity.primaryAxisMin, _data[index - 1].primaryAxisMin);
     }
 
-    final replacedBar = _bars[index];
-    _bars[index] = bar;
-
-    if (replacedBar.primaryAxisMax == _primaryAxisRange!.max ||
-        replacedBar.primaryAxisMin == _primaryAxisRange!.min) {
-      _computePrimaryAxisBounds(_bars);
-    }
-    if (replacedBar.secondaryAxisMax == _secondaryAxisRange!.max ||
-        replacedBar.secondaryAxisMin == _secondaryAxisRange!.min) {
-      // TODO
-      // What if there are multiple bars with the same secondaryAxisMin or secondaryAxisMax?
-      // If that's the case we'd only need to iterate until the same max/min is found.
-
-      // perhaps i need to rethink this approach. perhaps i need two data structures
-      // one sorted by primaryAxisMin and one sorted by secondaryAxisMin
-      _computeSecondaryAxisBounds(_bars);
-    }
-    notifyListeners();
+    _data[index] = entity;
   }
 
   @override
   void clear() {
-    _bars.clear();
+    _data.clear();
+    _primaryAxisRange = null;
+    _secondaryAxisRange = null;
+    _notifyListeners();
+  }
+
+  void _notifyListeners() {
     notifyListeners();
   }
 
-  void _computePrimaryAxisBounds(List<T> bars) {
-    if (bars.isEmpty) {
-      return;
-    }
-
-    _primaryAxisRange ??= Range(
-      min: bars.first.primaryAxisMin,
-      max: bars.last.primaryAxisMax,
-    );
-
-    _primaryAxisRange!.min =
-        min(_primaryAxisRange!.min, bars.first.primaryAxisMin);
-    _primaryAxisRange!.max =
-        max(_primaryAxisRange!.max, bars.last.primaryAxisMax);
-  }
-
-  void _computeDatasetBounds(List<T> bars) {
-    _computePrimaryAxisBounds(bars);
-    _computeSecondaryAxisBounds(bars);
-  }
-
+  /// Returns [null] if not found.
+  @override
   int? _firstIndexWithin(Range range) {
-    int startIndex = _binarySearch(range.min);
+    int startIndex = __binarySearch(range.min);
 
-    if (startIndex < _bars.length &&
-        _bars[startIndex].primaryAxisMin >= range.min &&
-        _bars[startIndex].primaryAxisMin <= range.max) {
+    if (startIndex < _data.length &&
+        _data[startIndex].primaryAxisMin >= range.min &&
+        _data[startIndex].primaryAxisMin <= range.max) {
       if (startIndex > 0) {
         // decrementing allows us to have a "scrolling" like effect
         // by painting the first bar outside of the viewport
@@ -204,19 +120,19 @@ class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
     return null;
   }
 
-  int _binarySearch(double primaryAxisValue) {
+  int __binarySearch(double value) {
     int low = 0;
-    int high = _bars.length - 1;
+    int high = _data.length - 1;
 
     while (low <= high) {
       int mid = low + ((high - low) >> 1);
-      if (_bars[mid].primaryAxisMin < primaryAxisValue) {
+      if (_data[mid].primaryAxisMin < value) {
         low = mid + 1;
-      } else if (_bars[mid].primaryAxisMin > primaryAxisValue) {
+      } else if (_data[mid].primaryAxisMin > value) {
         high = mid - 1;
       } else {
         // Adjust to find the first occurrence of the target
-        while (mid > 0 && _bars[mid - 1].primaryAxisMin == primaryAxisValue) {
+        while (mid > 0 && _data[mid - 1].primaryAxisMin == value) {
           mid--;
         }
         return mid;
@@ -225,5 +141,112 @@ class DynamicBarDataset<T extends DynamicBar> extends BarDataset<T> {
 
     // not found
     return low;
+  }
+}
+
+class BarDataset<T extends Bar> with _DatasetMutations<T> {
+  final _plottableDataset = _XYChartDataset<T>();
+
+  List<T> get _data => _plottableDataset._data;
+  Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;
+  Range? get secondaryAxisRange => _plottableDataset._secondaryAxisRange;
+
+  @override
+  void add(T entity) {
+    _plottableDataset.add(entity);
+    __computeDatasetAxisBounds([entity]);
+    _plottableDataset._notifyListeners();
+  }
+
+  @override
+  void addAll(List<T> entities) {
+    _plottableDataset.addAll(entities);
+    __computeDatasetAxisBounds(entities);
+    _plottableDataset._notifyListeners();
+  }
+
+  @override
+  void insert(int index, T entity) {
+    _plottableDataset.insert(index, entity);
+    __computeDatasetAxisBounds([entity]);
+    _plottableDataset._notifyListeners();
+  }
+
+  @override
+  void replace(int index, T entity) {
+    late final T barToReplace;
+    try {
+      barToReplace = _plottableDataset._data[index] as T;
+    } catch (e) {
+      throw XYChartException(
+          'Cannot replace a bar at index $index. Index must be between 0 and ${_plottableDataset._data.length - 1}');
+    }
+    _plottableDataset.replace(index, entity);
+
+    if (barToReplace.primaryAxisMax ==
+            _plottableDataset._primaryAxisRange!.max ||
+        barToReplace.primaryAxisMin ==
+            _plottableDataset._primaryAxisRange!.min) {
+      __computePrimaryAxisBounds(_plottableDataset._data as List<T>);
+    }
+    if (barToReplace.secondaryAxisMax ==
+            _plottableDataset._secondaryAxisRange!.max ||
+        barToReplace.secondaryAxisMin ==
+            _plottableDataset._secondaryAxisRange!.min) {
+      // TODO
+      // What if there are multiple bars with the same secondaryAxisMin or secondaryAxisMax?
+      // If that's the case we'd only need to iterate until the same max/min is found.
+
+      // perhaps i need to rethink this approach. perhaps i need two data structures
+      // one sorted by primaryAxisMin and one sorted by secondaryAxisMin
+      __computeSecondaryAxisBounds(_plottableDataset._data as List<T>);
+    }
+    _plottableDataset._notifyListeners();
+  }
+
+  @override
+  void clear() => _plottableDataset.clear();
+
+  @override
+  int? _firstIndexWithin(Range range) =>
+      _plottableDataset._firstIndexWithin(range);
+
+  void __computeDatasetAxisBounds(List<T> bars) {
+    __computePrimaryAxisBounds(bars);
+    __computeSecondaryAxisBounds(bars);
+  }
+
+  void __computePrimaryAxisBounds(List<T> bars) {
+    if (bars.isEmpty) {
+      return;
+    }
+
+    _plottableDataset._primaryAxisRange ??= Range(
+      min: bars.first.primaryAxisMin,
+      max: bars.last.primaryAxisMax,
+    );
+
+    _plottableDataset._primaryAxisRange!.min = min(
+        _plottableDataset._primaryAxisRange!.min, bars.first.primaryAxisMin);
+    _plottableDataset._primaryAxisRange!.max =
+        max(_plottableDataset._primaryAxisRange!.max, bars.last.primaryAxisMax);
+  }
+
+  void __computeSecondaryAxisBounds(List<T> bars) {
+    if (bars.isEmpty) {
+      return;
+    }
+
+    _plottableDataset._secondaryAxisRange ??= Range(
+      min: bars.first.secondaryAxisMin,
+      max: bars.first.secondaryAxisMax,
+    );
+
+    for (int i = 0; i < bars.length; i++) {
+      _plottableDataset._secondaryAxisRange!.min = min(
+          _plottableDataset._secondaryAxisRange!.min, bars[i].secondaryAxisMin);
+      _plottableDataset._secondaryAxisRange!.max = max(
+          _plottableDataset._secondaryAxisRange!.max, bars[i].secondaryAxisMax);
+    }
   }
 }
