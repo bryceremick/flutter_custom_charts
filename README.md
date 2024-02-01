@@ -24,7 +24,7 @@ Create some datasets and add some data do them:
 final barDataset = BarDataset()
       ..addAll(
         List.generate(
-          10000,
+          1000,
           (index) => Bar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
@@ -38,7 +38,7 @@ final barDataset = BarDataset()
 final pointDataset = PointDataset(shouldConnectLines: true)
       ..addAll(
         List.generate(
-          10000,
+          1000,
           (index) => Point(
             primaryAxisValue: (index * 10) + 5,
             secondaryAxisValue: rng.nextInt(10).toDouble() + 3,
