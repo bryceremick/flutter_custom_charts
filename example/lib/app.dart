@@ -23,10 +23,6 @@ class _AppState extends State<App> {
           (index) => Bar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
-            // secondaryAxisMin:
-            //     index % 2 == 0 ? 0 : (rng.nextInt(10).toDouble() + 3) * -1,
-            // secondaryAxisMax:
-            //     index % 2 == 0 ? rng.nextInt(10).toDouble() + 3 : 0,
             secondaryAxisMin: 0,
             secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
             fill: const Color.fromRGBO(33, 150, 243, 0.8),
@@ -196,8 +192,8 @@ class _AppState extends State<App> {
               flex: 5,
               child: Center(
                 child: SizedBox(
-                  // height: 400,
-                  // width: 1000,
+                  height: 500,
+                  width: 1000,
                   child: chart,
                 ),
               ),

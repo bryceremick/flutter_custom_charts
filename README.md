@@ -1,39 +1,90 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flutter_custom_charts
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+A highly extendable, high performance charting library.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+- Plot entities on an xy coordinate based chart. Current entities include:
+  - `Bar`
+  - `Point`
+  - `Label`
+  - `Line`
+- Every entity is extendable. All you have to do is override the `paint` method on an entity, and you can customize it to fit your use-case.
+- Animate to a specific `Range` on the `primaryAxis`. This allows you to zoom and pan on the chart.
+- Add multiple datasets to an  axis, and multiple axes on a chart.
+- Sync the zooming and panning of multiple chart instances.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Create a dataset and add some data do it:
 
 ```dart
-const like = 'sample';
+final barDataset = BarDataset()
+      ..addAll(
+        List.generate(
+          10000,
+          (index) => Bar(
+            primaryAxisMin: index * 10,
+            primaryAxisMax: ((index + 1) * 10) - 1,
+            secondaryAxisMin: 0,
+            secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
+            fill: const Color.fromRGBO(33, 150, 243, 0.8),
+          ),
+        ),
+      );
+
+final pointDataset = PointDataset(shouldConnectLines: true)
+      ..addAll(
+        List.generate(
+          10000,
+          (index) => Point(
+            primaryAxisValue: (index * 10) + 5,
+            secondaryAxisValue: rng.nextInt(10).toDouble() + 3,
+            fill: Colors.red,
+          ),
+        ),
+      );
 ```
 
-## Additional information
+Create primary and secondary axis controllers:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+final secondaryAxis = SecondaryNumericAxisController(
+      barDatasets: [barDataset],
+      pointDatasets: [pointDataset],
+      position: AxisPosition.left, // y axis
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
+      explicitRange: Range(min: 0, max: 13),
+    );
+
+final primaryAxis = PrimaryNumericAxisController(
+      secondaryAxisControllers: [secondaryAxis],
+      position: AxisPosition.bottom, // x axis
+      explicitRange: Range(min: 0, max: 600), // if null, the entire dataset will be painted within chart viewport
+      details: AxisDetails(
+        stepLabelFormatter: (value) => '${value.round()}',
+      ),
+    );  
+```
+
+Create a chart and pass in the `PrimaryAxisController`:
+
+```dart
+final chart = XYChart(
+      primaryAxisController: primaryAxis,
+    );
+```
+
+Add the chart to your flutter build method.
+
+```dart
+...
+ SizedBox(
+    height: 500,
+    width: 1000,
+    child: chart,
+ ),
+ ...
+```
