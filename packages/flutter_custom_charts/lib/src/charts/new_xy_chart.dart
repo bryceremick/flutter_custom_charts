@@ -18,18 +18,20 @@ class NewXYChart extends StatelessWidget {
       height: double.infinity,
       child: GestureDetector(
         onHorizontalDragUpdate: (details) {
-          if (primaryAxisController._implicitDataRange != null) {
+          if (primaryAxisController._implicitPrimaryAxisDataRange != null) {
             primaryAxisController._onDragUpdate(
               details,
-              implicitDatasetRange: primaryAxisController._implicitDataRange!,
+              implicitDatasetRange:
+                  primaryAxisController._implicitPrimaryAxisDataRange!,
             );
           }
         },
         onVerticalDragUpdate: (details) {
-          if (primaryAxisController._implicitDataRange != null) {
+          if (primaryAxisController._implicitPrimaryAxisDataRange != null) {
             primaryAxisController._onDragUpdate(
               details,
-              implicitDatasetRange: primaryAxisController._implicitDataRange!,
+              implicitDatasetRange:
+                  primaryAxisController._implicitPrimaryAxisDataRange!,
             );
           }
         },

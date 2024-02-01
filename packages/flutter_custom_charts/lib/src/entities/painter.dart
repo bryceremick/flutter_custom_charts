@@ -33,7 +33,7 @@ abstract class BarPainter {
   }
 }
 
-abstract class PointPainter {
+abstract mixin class PointPainter {
   void paint(
     Canvas canvas, {
     required Offset canvasRelativePoint,

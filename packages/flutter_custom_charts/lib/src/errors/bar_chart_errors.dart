@@ -42,3 +42,17 @@ class OutOfOrderException implements XYChartException {
     return 'OutOfOrderException: $message';
   }
 }
+
+class InvalidEntityReplacement implements XYChartException {
+  @override
+  final String message;
+
+  InvalidEntityReplacement(
+      {this.message =
+          'Cannot replace an entity with another entity containing different axis values.'});
+
+  @override
+  String toString() {
+    return 'InvalidEntityReplacement: $message';
+  }
+}

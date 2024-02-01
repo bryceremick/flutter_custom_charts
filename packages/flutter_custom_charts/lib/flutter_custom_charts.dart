@@ -12,6 +12,8 @@ part 'src/controllers/category_axis_controller.dart';
 // part 'src/charts/xy_chart.dart';
 part 'src/controllers/numeric_axis_controller.dart';
 part 'src/datasets/numeric/bar_dataset.dart';
+part 'src/datasets/numeric/point_dataset.dart';
+part 'src/datasets/plottable_xy_dataset.dart';
 // part 'src/entities/bar.dart';
 part 'src/entities/bar.dart';
 part 'src/entities/label.dart';

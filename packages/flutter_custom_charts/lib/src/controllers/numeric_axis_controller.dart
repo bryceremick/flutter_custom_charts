@@ -1,6 +1,7 @@
 part of flutter_custom_charts;
 
-class PrimaryNumericAxisController extends PrimaryAxisController {
+class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
+    extends PrimaryAxisController {
   PrimaryNumericAxisController({
     required this.secondaryAxisControllers,
     super.position = AxisPosition.bottom,
@@ -17,8 +18,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 
   AxisDetails? details;
-  final List<SecondaryNumericAxisController<BarDataset>>
-      secondaryAxisControllers;
+  final List<SecondaryNumericAxisController<T, K>> secondaryAxisControllers;
 
   @override
   void paint(
@@ -42,7 +42,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 
   void _paintChartData(Canvas canvas) {
-    final primaryAxisDatasetRange = _implicitDataRange;
+    final primaryAxisDatasetRange = _implicitPrimaryAxisDataRange;
     if (primaryAxisDatasetRange == null) {
       return;
     }
@@ -53,12 +53,13 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     if (explicitRange != null &&
         !explicitRange!.isWithin(scrollableRange ?? primaryAxisDatasetRange)) {
       throw XYChartException(
-        'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit${scrollableRange ?? _implicitDataRange}',
+        'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit${scrollableRange ?? _implicitPrimaryAxisDataRange}',
       );
     }
 
     for (final secondaryAxis in secondaryAxisControllers) {
-      final secondaryAxisDatasetRange = secondaryAxis._implicitDataRange;
+      final secondaryAxisDatasetRange =
+          secondaryAxis._implicitSecondaryAxisDataRange;
       if (secondaryAxisDatasetRange == null) {
         continue;
       }
@@ -105,7 +106,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 
   void _paintChartAxesDetails(Canvas canvas) {
-    if (explicitRange == null && _implicitDataRange == null) {
+    if (explicitRange == null && _implicitPrimaryAxisDataRange == null) {
       return;
     }
 
@@ -118,7 +119,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
           detailsCrossAxisPixelSize: details!.crossAlignmentPixelSize,
         ),
         details: details!,
-        datasetRange: explicitRange ?? _implicitDataRange!,
+        datasetRange: explicitRange ?? _implicitPrimaryAxisDataRange!,
         isInverted: false,
       );
     }
@@ -126,7 +127,7 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
     for (final secondaryAxis in secondaryAxisControllers) {
       if (secondaryAxis.details == null ||
           (secondaryAxis.explicitRange == null &&
-              secondaryAxis._implicitDataRange == null)) {
+              secondaryAxis._implicitSecondaryAxisDataRange == null)) {
         continue;
       }
 
@@ -139,15 +140,15 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
               secondaryAxis.details!.crossAlignmentPixelSize,
         ),
         details: secondaryAxis.details!,
-        datasetRange:
-            secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+        datasetRange: secondaryAxis.explicitRange ??
+            secondaryAxis._implicitSecondaryAxisDataRange!,
         isInverted: isSecondaryAxisInverted(position),
       );
     }
   }
 
   void _paintChartGrid(Canvas canvas) {
-    if (explicitRange == null && _implicitDataRange == null) {
+    if (explicitRange == null && _implicitPrimaryAxisDataRange == null) {
       return;
     }
 
@@ -156,22 +157,22 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
         canvas,
         constraints: super.constraints,
         details: details!,
-        datasetRange: explicitRange ?? _implicitDataRange!,
+        datasetRange: explicitRange ?? _implicitPrimaryAxisDataRange!,
       );
     }
 
     for (final secondaryAxis in secondaryAxisControllers) {
       if (secondaryAxis.details == null ||
           (secondaryAxis.explicitRange == null &&
-              secondaryAxis._implicitDataRange == null)) {
+              secondaryAxis._implicitSecondaryAxisDataRange == null)) {
         continue;
       }
       secondaryAxis._paintAxisGrid(
         canvas,
         constraints: super.constraints,
         details: secondaryAxis.details!,
-        datasetRange:
-            secondaryAxis.explicitRange ?? secondaryAxis._implicitDataRange!,
+        datasetRange: secondaryAxis.explicitRange ??
+            secondaryAxis._implicitSecondaryAxisDataRange!,
       );
     }
   }
@@ -220,29 +221,34 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 
   @override
-  Range? get _implicitDataRange {
+  Range? get _implicitPrimaryAxisDataRange {
     Range? range;
     for (final secondaryAxis in secondaryAxisControllers) {
-      for (final dataset in secondaryAxis.barDatasets) {
-        if (dataset.primaryAxisRange != null) {
-          range ??= dataset.primaryAxisRange!;
-          range.min = min(range.min, dataset.primaryAxisRange!.min);
-          range.max = max(range.max, dataset.primaryAxisRange!.max);
-        }
+      final primaryAxisRange = secondaryAxis._implicitPrimaryAxisDataRange;
+      if (primaryAxisRange != null) {
+        range ??= primaryAxisRange;
+        range.min = min(range.min, primaryAxisRange.min);
+        range.max = max(range.max, primaryAxisRange.max);
       }
     }
 
     return range;
   }
 
-  void animateTo(Range to, Duration duration, Curve curve) {
-    if (_implicitDataRange == null) {
+  /// Animates the axis to the desired range. If [to] is null, the axis will animate to the default range
+  void animateTo({
+    required Range? to,
+    required Duration duration,
+    required Curve curve,
+  }) {
+    if (_implicitPrimaryAxisDataRange == null) {
       return;
     }
 
-    if (!to.isWithin(scrollableRange ?? _implicitDataRange!)) {
+    if (to != null &&
+        !to.isWithin(scrollableRange ?? _implicitPrimaryAxisDataRange!)) {
       throw XYChartException(
-        'Desired range must be a subset of the implicit dataset range. Desired$to, Implicit$_implicitDataRange',
+        'Desired range must be a subset of the default axis range. Desired: [$to], Default: [${scrollableRange ?? _implicitPrimaryAxisDataRange!}]',
       );
     }
 
@@ -262,8 +268,9 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
             rangeB: Range(
               min: explicitRange != null
                   ? explicitRange!.min
-                  : _implicitDataRange!.min,
-              max: to.min,
+                  : _implicitPrimaryAxisDataRange!.min,
+              max: to?.min ??
+                  (scrollableRange?.min ?? _implicitPrimaryAxisDataRange!.min),
             ),
           ),
           max: linearTransform(
@@ -272,8 +279,9 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
             rangeB: Range(
               min: explicitRange != null
                   ? explicitRange!.max
-                  : _implicitDataRange!.max,
-              max: to.max,
+                  : _implicitPrimaryAxisDataRange!.max,
+              max: to?.max ??
+                  (scrollableRange?.max ?? _implicitPrimaryAxisDataRange!.max),
             ),
           ),
         );
@@ -293,10 +301,11 @@ class PrimaryNumericAxisController extends PrimaryAxisController {
   }
 }
 
-class SecondaryNumericAxisController<T extends BarDataset>
-    extends SecondaryAxisController {
+class SecondaryNumericAxisController<T extends BarDataset,
+    K extends PointDataset> extends SecondaryAxisController {
   SecondaryNumericAxisController({
     required this.barDatasets,
+    required this.pointDatasets,
     required super.position,
     super.explicitRange,
     this.details,
@@ -308,17 +317,94 @@ class SecondaryNumericAxisController<T extends BarDataset>
 
   AxisDetails? details;
   final List<T> barDatasets;
+  final List<K> pointDatasets;
 
-  Range? get _implicitDataRange {
+  Range? get __implicitBarPrimaryAxisRange {
     Range? range;
     for (final dataset in barDatasets) {
-      if (dataset.secondaryAxisRange != null) {
-        range ??= dataset.secondaryAxisRange!;
-        range.min = min(range.min, dataset.secondaryAxisRange!.min);
-        range.max = max(range.max, dataset.secondaryAxisRange!.max);
+      final primaryAxisRange = dataset.primaryAxisRange;
+      if (primaryAxisRange != null) {
+        range ??= primaryAxisRange;
+        range.min = min(range.min, primaryAxisRange.min);
+        range.max = max(range.max, primaryAxisRange.max);
       }
     }
     return range;
+  }
+
+  Range? get __implicitBarSecondaryAxisRange {
+    Range? range;
+    for (final dataset in barDatasets) {
+      final secondaryAxisRange = dataset.secondaryAxisRange;
+      if (secondaryAxisRange != null) {
+        range ??= secondaryAxisRange;
+        range.min = min(range.min, secondaryAxisRange.min);
+        range.max = max(range.max, secondaryAxisRange.max);
+      }
+    }
+    return range;
+  }
+
+  Range? get __implicitPointPrimaryAxisRange {
+    Range? range;
+    for (final dataset in pointDatasets) {
+      final primaryAxisRange = dataset.primaryAxisRange;
+      if (primaryAxisRange != null) {
+        range ??= primaryAxisRange;
+        range.min = min(range.min, primaryAxisRange.min);
+        range.max = max(range.max, primaryAxisRange.max);
+      }
+    }
+    return range;
+  }
+
+  Range? get __implicitPointSecondaryAxisRange {
+    Range? range;
+    for (final dataset in pointDatasets) {
+      final secondaryAxisRange = dataset.secondaryAxisRange;
+      if (secondaryAxisRange != null) {
+        range ??= secondaryAxisRange;
+        range.min = min(range.min, secondaryAxisRange.min);
+        range.max = max(range.max, secondaryAxisRange.max);
+      }
+    }
+    return range;
+  }
+
+  Range? get _implicitPrimaryAxisDataRange {
+    final barRange = __implicitBarPrimaryAxisRange;
+    final pointRange = __implicitPointPrimaryAxisRange;
+    if (barRange == null && pointRange == null) {
+      return null;
+    }
+    if (barRange == null) {
+      return pointRange;
+    }
+    if (pointRange == null) {
+      return barRange;
+    }
+    return Range(
+      min: min(barRange.min, pointRange.min),
+      max: max(barRange.max, pointRange.max),
+    );
+  }
+
+  Range? get _implicitSecondaryAxisDataRange {
+    final barRange = __implicitBarSecondaryAxisRange;
+    final pointRange = __implicitPointSecondaryAxisRange;
+    if (barRange == null && pointRange == null) {
+      return null;
+    }
+    if (barRange == null) {
+      return pointRange;
+    }
+    if (pointRange == null) {
+      return barRange;
+    }
+    return Range(
+      min: min(barRange.min, pointRange.min),
+      max: max(barRange.max, pointRange.max),
+    );
   }
 
   @override

@@ -198,7 +198,7 @@ abstract class PrimaryAxisController extends _AxisController
   final bool isScrollable;
   final Range? scrollableRange;
   ChartAnimation? _zoomAnimation;
-  Range? get _implicitDataRange => null;
+  Range? get _implicitPrimaryAxisDataRange => null;
 
   _onDragUpdate(
     DragUpdateDetails details, {

@@ -4,7 +4,7 @@ part of flutter_custom_charts;
 
 class Bar extends PlottableXYEntity with ConstrainedPainter {
   Bar({
-    required super.primaryAxisMin,
+    required this.primaryAxisMin,
     required this.primaryAxisMax,
     required this.secondaryAxisMax,
     this.secondaryAxisMin = 0,
@@ -12,7 +12,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     this.stroke,
     this.label,
     this.lines = const [],
-  }) {
+  }) : super(sortableValue: primaryAxisMin) {
     if (secondaryAxisMin >= secondaryAxisMax) {
       throw XYChartException('Bar yMin must be less than yMax');
     }
@@ -28,6 +28,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
   final double secondaryAxisMax;
   final double secondaryAxisMin;
 
+  final double primaryAxisMin;
   final double primaryAxisMax;
   final List<Line> lines;
 
@@ -122,5 +123,27 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
         ),
       );
     }
+  }
+
+  @override
+  bool operator ==(covariant Bar other) {
+    if (identical(this, other)) return true;
+
+    return other.secondaryAxisMax == secondaryAxisMax &&
+        other.secondaryAxisMin == secondaryAxisMin &&
+        other.primaryAxisMax == primaryAxisMax &&
+        other.primaryAxisMin == primaryAxisMin;
+  }
+
+  @override
+  int get hashCode {
+    return fill.hashCode ^
+        stroke.hashCode ^
+        label.hashCode ^
+        secondaryAxisMax.hashCode ^
+        secondaryAxisMin.hashCode ^
+        primaryAxisMax.hashCode ^
+        primaryAxisMin.hashCode ^
+        lines.hashCode;
   }
 }

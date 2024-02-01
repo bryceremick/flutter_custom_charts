@@ -54,14 +54,17 @@ class _AppState extends State<App> {
 
     secondaryAxis = SecondaryNumericAxisController(
       barDatasets: [barDataset1],
+      pointDatasets: [],
       position: AxisPosition.left,
       details: AxisDetails(
         stepLabelFormatter: (value) => '${value.round()}',
       ),
-      // explicitRange: Range(min: -15, max: 15),
+      explicitRange: Range(min: -15, max: 15),
     );
+
     secondaryAxis2 = SecondaryNumericAxisController(
       barDatasets: [barDataset2],
+      pointDatasets: [],
       position: AxisPosition.left,
       explicitRange: Range(min: 0, max: 20),
       details: AxisDetails(
@@ -70,17 +73,18 @@ class _AppState extends State<App> {
       ),
       // explicitRange: Range(min: 0, max: 20),
     );
+
     primaryAxis = PrimaryNumericAxisController(
       secondaryAxisControllers: [secondaryAxis],
       position: AxisPosition.bottom,
       explicitRange: Range(min: 0, max: 600),
-      // scrollableRange: Range(min: -100, max: 2100),
+      // scrollableRange: Range(min: -100, max: 1000),
       details: AxisDetails(
         stepLabelFormatter: (value) => '${value.round()}',
       ),
-      onExplicitRangeChange: (range) {
-        primaryAxis2.explicitRange = range;
-      },
+      // onExplicitRangeChange: (range) {
+      //   primaryAxis2.explicitRange = range;
+      // },
     );
     primaryAxis2 = PrimaryNumericAxisController(
       secondaryAxisControllers: [secondaryAxis2],
@@ -100,21 +104,21 @@ class _AppState extends State<App> {
       // padding: const EdgeInsets.all(30),
     );
 
-    Future.delayed(const Duration(seconds: 5), () {
-      primaryAxis.animateTo(
-        Range(min: 0, max: 100),
-        const Duration(seconds: 3),
-        Curves.linear,
-      );
-    });
+    // Future.delayed(const Duration(seconds: 5), () {
+    //   primaryAxis.animateTo(
+    //     Range(min: 0, max: 100),
+    //     const Duration(seconds: 3),
+    //     Curves.linear,
+    //   );
+    // });
 
-    Future.delayed(const Duration(seconds: 10), () {
-      primaryAxis.animateTo(
-        Range(min: 1500, max: 2000),
-        const Duration(seconds: 5),
-        Curves.linear,
-      );
-    });
+    // Future.delayed(const Duration(seconds: 10), () {
+    //   primaryAxis.animateTo(
+    //     Range(min: 1500, max: 2000),
+    //     const Duration(seconds: 5),
+    //     Curves.linear,
+    //   );
+    // });
 
     // Future.delayed(const Duration(seconds: 10), () {
     //   primaryAxis.zoomTo(
