@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 part 'src/charts/chart_canvas.dart';
-part 'src/charts/new_xy_chart.dart';
+part 'src/charts/xy_chart.dart';
 part 'src/controllers/axis_controller.dart';
 part 'src/controllers/category_axis_controller.dart';
 // part 'src/charts/xy_chart.dart';

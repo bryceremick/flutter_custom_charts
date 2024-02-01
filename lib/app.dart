@@ -95,11 +95,11 @@ class _AppState extends State<App> {
         stepLabelFormatter: (value) => '${value.round()}',
       ),
     );
-    chart = NewXYChart(
+    chart = XYChart(
       primaryAxisController: primaryAxis,
       // padding: const EdgeInsets.all(30),
     );
-    chart2 = NewXYChart(
+    chart2 = XYChart(
       primaryAxisController: primaryAxis2,
       // padding: const EdgeInsets.all(30),
     );
@@ -144,8 +144,8 @@ class _AppState extends State<App> {
   late final SecondaryNumericAxisController secondaryAxis2;
   late final PrimaryNumericAxisController primaryAxis;
   late final PrimaryNumericAxisController primaryAxis2;
-  late final NewXYChart chart;
-  late final NewXYChart chart2;
+  late final XYChart chart;
+  late final XYChart chart2;
 
   @override
   Widget build(BuildContext context) {

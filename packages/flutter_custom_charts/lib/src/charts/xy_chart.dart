@@ -1,7 +1,7 @@
 part of flutter_custom_charts;
 
-class NewXYChart extends StatelessWidget {
-  const NewXYChart({
+class XYChart extends StatelessWidget {
+  const XYChart({
     super.key,
     required this.primaryAxisController,
     this.padding = EdgeInsets.zero,
