@@ -2,6 +2,8 @@
 
 A highly extendable, high performance charting library.
 
+![chart_animation_example](https://github.com/bryceremick/flutter_custom_charts/assets/17426081/58e5d9e5-2635-4cd9-b1a3-a3fdd734fae5)
+
 ## Features
 
 - Plot entities on an xy coordinate based chart. Current entities include:
@@ -16,7 +18,7 @@ A highly extendable, high performance charting library.
 
 ## Usage
 
-Create a dataset and add some data do it:
+Create some datasets and add some data do them:
 
 ```dart
 final barDataset = BarDataset()
