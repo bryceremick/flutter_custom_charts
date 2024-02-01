@@ -1,7 +1,12 @@
 part of flutter_custom_charts;
 
 class PointDataset<T extends Point> with _DatasetMutations<T> {
+  PointDataset({
+    this.shouldConnectLines = false,
+  });
+
   final _plottableDataset = _PlottableXYDataset<T>();
+  final bool shouldConnectLines;
 
   List<T> get _data => _plottableDataset._data;
   Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;
@@ -64,14 +69,15 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
     }
 
     _plottableDataset._primaryAxisRange ??= Range(
-      min: points.first.point.dx,
-      max: points.last.point.dx,
+      min: points.first.primaryAxisValue,
+      max: points.last.primaryAxisValue,
     );
 
-    _plottableDataset._primaryAxisRange!.min =
-        min(_plottableDataset._primaryAxisRange!.min, points.first.point.dx);
-    _plottableDataset._primaryAxisRange!.max =
-        max(_plottableDataset._primaryAxisRange!.max, points.last.point.dx);
+    _plottableDataset._primaryAxisRange!.min = min(
+        _plottableDataset._primaryAxisRange!.min,
+        points.first.primaryAxisValue);
+    _plottableDataset._primaryAxisRange!.max = max(
+        _plottableDataset._primaryAxisRange!.max, points.last.primaryAxisValue);
   }
 
   void __computeSecondaryAxisBounds(List<T> bars) {
@@ -80,15 +86,17 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
     }
 
     _plottableDataset._secondaryAxisRange ??= Range(
-      min: bars.first.point.dy,
-      max: bars.first.point.dy,
+      min: bars.first.secondaryAxisValue,
+      max: bars.first.secondaryAxisValue,
     );
 
     for (int i = 0; i < bars.length; i++) {
-      _plottableDataset._secondaryAxisRange!.min =
-          min(_plottableDataset._secondaryAxisRange!.min, bars[i].point.dy);
-      _plottableDataset._secondaryAxisRange!.max =
-          max(_plottableDataset._secondaryAxisRange!.max, bars[i].point.dy);
+      _plottableDataset._secondaryAxisRange!.min = min(
+          _plottableDataset._secondaryAxisRange!.min,
+          bars[i].secondaryAxisValue);
+      _plottableDataset._secondaryAxisRange!.max = max(
+          _plottableDataset._secondaryAxisRange!.max,
+          bars[i].secondaryAxisValue);
     }
   }
 }

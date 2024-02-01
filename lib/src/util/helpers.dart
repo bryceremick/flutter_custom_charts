@@ -147,6 +147,72 @@ ConstrainedArea translateBarToCanvas({
   }
 }
 
+Offset translatePointToCanvas({
+  required double primaryAxisValue,
+  required double secondaryAxisValue,
+  required Range primaryAxisDatasetRange,
+  required Range secondaryAxisDatasetRange,
+  required AxisPosition primaryAxisPosition,
+  required ConstrainedArea constraints,
+}) {
+  final canvasXAxisRange = Range(min: constraints.xMin, max: constraints.xMax);
+  final canvasYAxisRange = Range(min: constraints.yMin, max: constraints.yMax);
+  switch (primaryAxisPosition) {
+    case AxisPosition.left:
+      return Offset(
+        linearTransform(
+          secondaryAxisValue,
+          rangeA: secondaryAxisDatasetRange,
+          rangeB: canvasXAxisRange,
+        ),
+        linearTransform(
+          primaryAxisValue,
+          rangeA: primaryAxisDatasetRange,
+          rangeB: canvasYAxisRange,
+        ),
+      );
+    case AxisPosition.right:
+      return Offset(
+        linearTransform(
+          secondaryAxisValue,
+          rangeA: secondaryAxisDatasetRange,
+          rangeB: canvasXAxisRange.inverted(),
+        ),
+        linearTransform(
+          primaryAxisValue,
+          rangeA: primaryAxisDatasetRange,
+          rangeB: canvasYAxisRange,
+        ),
+      );
+    case AxisPosition.top:
+      return Offset(
+        linearTransform(
+          primaryAxisValue,
+          rangeA: primaryAxisDatasetRange,
+          rangeB: canvasXAxisRange,
+        ),
+        linearTransform(
+          secondaryAxisValue,
+          rangeA: secondaryAxisDatasetRange,
+          rangeB: canvasYAxisRange,
+        ),
+      );
+    case AxisPosition.bottom:
+      return Offset(
+        linearTransform(
+          primaryAxisValue,
+          rangeA: primaryAxisDatasetRange,
+          rangeB: canvasXAxisRange,
+        ),
+        linearTransform(
+          secondaryAxisValue,
+          rangeA: secondaryAxisDatasetRange,
+          rangeB: canvasYAxisRange.inverted(),
+        ),
+      );
+  }
+}
+
 double calculateDragDelta(
   double delta, {
   required Range canvasRange,

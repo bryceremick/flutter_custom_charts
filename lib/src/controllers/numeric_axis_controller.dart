@@ -57,6 +57,19 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       );
     }
 
+    final primaryAxisDataSetRange = Range(
+      min: linearTransform(
+        primaryAxisCanvasRange.min,
+        rangeA: primaryAxisCanvasRange,
+        rangeB: explicitRange ?? primaryAxisDatasetRange,
+      ),
+      max: linearTransform(
+        primaryAxisCanvasRange.max,
+        rangeA: primaryAxisCanvasRange,
+        rangeB: explicitRange ?? primaryAxisDatasetRange,
+      ),
+    );
+
     for (final secondaryAxis in secondaryAxisControllers) {
       final secondaryAxisDatasetRange =
           secondaryAxis._implicitSecondaryAxisDataRange;
@@ -64,20 +77,8 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
         continue;
       }
 
+      // paint bars
       for (final dataset in secondaryAxis.barDatasets) {
-        final primaryAxisDataSetRange = Range(
-          min: linearTransform(
-            primaryAxisCanvasRange.min,
-            rangeA: primaryAxisCanvasRange,
-            rangeB: explicitRange ?? primaryAxisDatasetRange,
-          ),
-          max: linearTransform(
-            primaryAxisCanvasRange.max,
-            rangeA: primaryAxisCanvasRange,
-            rangeB: explicitRange ?? primaryAxisDatasetRange,
-          ),
-        );
-
         // binary search for the first bar to paint in viewport
         int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
 
@@ -98,6 +99,50 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
             constraints: super.constraints,
           );
           bar.paint(canvas, constraints: barConstraints);
+          index++;
+          if (index >= dataset._data.length) break;
+        }
+      }
+
+      // paint points
+      for (final dataset in secondaryAxis.pointDatasets) {
+        // binary search for the first point to paint in viewport
+        int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
+
+        // paint points within chart viewport
+        while (dataset._data[index!].primaryAxisValue <=
+            (primaryAxisDataSetRange.max + 1)) {
+          final point = dataset._data[index];
+          final translatedPoint = translatePointToCanvas(
+            primaryAxisValue: point.primaryAxisValue,
+            secondaryAxisValue: point.secondaryAxisValue,
+            primaryAxisDatasetRange: explicitRange ?? primaryAxisDatasetRange,
+            secondaryAxisDatasetRange:
+                secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
+            primaryAxisPosition: position,
+            constraints: super.constraints,
+          );
+
+          Offset? translatedPreviousPoint;
+
+          if (dataset.shouldConnectLines && index > 0) {
+            final previousPoint = dataset._data[index - 1];
+            translatedPreviousPoint = translatePointToCanvas(
+              primaryAxisValue: previousPoint.primaryAxisValue,
+              secondaryAxisValue: previousPoint.secondaryAxisValue,
+              primaryAxisDatasetRange: explicitRange ?? primaryAxisDatasetRange,
+              secondaryAxisDatasetRange:
+                  secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
+              primaryAxisPosition: position,
+              constraints: super.constraints,
+            );
+          }
+
+          point.paint(
+            canvas,
+            canvasRelativePoint: translatedPoint,
+            canvasRelativePreviousPoint: translatedPreviousPoint,
+          );
           index++;
           if (index >= dataset._data.length) break;
         }

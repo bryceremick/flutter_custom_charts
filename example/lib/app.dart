@@ -19,7 +19,7 @@ class _AppState extends State<App> {
     barDataset1 = BarDataset()
       ..addAll(
         List.generate(
-          1000000,
+          10000,
           (index) => Bar(
             primaryAxisMin: index * 10,
             primaryAxisMax: ((index + 1) * 10) - 1,
@@ -30,6 +30,18 @@ class _AppState extends State<App> {
             secondaryAxisMin: 0,
             secondaryAxisMax: rng.nextInt(10).toDouble() + 3,
             fill: const Color.fromRGBO(33, 150, 243, 0.8),
+          ),
+        ),
+      );
+
+    pointDataset1 = PointDataset(shouldConnectLines: true)
+      ..addAll(
+        List.generate(
+          10000,
+          (index) => Point(
+            primaryAxisValue: (index * 10) + 5,
+            secondaryAxisValue: rng.nextInt(10).toDouble() + 3,
+            fill: Colors.red,
           ),
         ),
       );
@@ -54,12 +66,12 @@ class _AppState extends State<App> {
 
     secondaryAxis = SecondaryNumericAxisController(
       barDatasets: [barDataset1],
-      pointDatasets: [],
+      pointDatasets: [pointDataset1],
       position: AxisPosition.left,
       details: AxisDetails(
         stepLabelFormatter: (value) => '${value.round()}',
       ),
-      explicitRange: Range(min: -15, max: 15),
+      explicitRange: Range(min: 0, max: 13),
     );
 
     secondaryAxis2 = SecondaryNumericAxisController(
@@ -139,6 +151,7 @@ class _AppState extends State<App> {
   }
 
   late final BarDataset barDataset1;
+  late final PointDataset pointDataset1;
   late final BarDataset barDataset2;
   late final SecondaryNumericAxisController secondaryAxis;
   late final SecondaryNumericAxisController secondaryAxis2;
