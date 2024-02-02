@@ -2,11 +2,11 @@ part of flutter_custom_charts;
 
 class PointDataset<T extends Point> with _DatasetMutations<T> {
   PointDataset({
-    this.shouldConnectLines = false,
+    this.connectPoints = false,
   });
 
   final _plottableDataset = _PlottableXYDataset<T>();
-  final bool shouldConnectLines;
+  final bool connectPoints;
 
   List<T> get _data => _plottableDataset._data;
   Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;

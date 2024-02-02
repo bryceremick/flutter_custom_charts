@@ -30,14 +30,22 @@ class _AppState extends State<App> {
         ),
       );
 
-    pointDataset1 = PointDataset(shouldConnectLines: true)
+    pointDataset1 = PointDataset(connectPoints: true)
       ..addAll(
         List.generate(
           10000,
           (index) => Point(
             primaryAxisValue: (index * 10) + 5,
             secondaryAxisValue: rng.nextInt(10).toDouble() + 3,
-            fill: Colors.red,
+            fill: Color.fromARGB(
+              255,
+              rng.nextInt(256),
+              rng.nextInt(256),
+              rng.nextInt(256),
+            ),
+            stroke: null,
+            radius: 0,
+            strokeWidth: 3,
           ),
         ),
       );
@@ -112,21 +120,21 @@ class _AppState extends State<App> {
       // padding: const EdgeInsets.all(30),
     );
 
-    // Future.delayed(const Duration(seconds: 5), () {
-    //   primaryAxis.animateTo(
-    //     Range(min: 0, max: 100),
-    //     const Duration(seconds: 3),
-    //     Curves.linear,
-    //   );
-    // });
+    Future.delayed(const Duration(seconds: 5), () {
+      primaryAxis.animateTo(
+        to: Range(min: 0, max: 100),
+        duration: const Duration(seconds: 3),
+        curve: Curves.linear,
+      );
+    });
 
-    // Future.delayed(const Duration(seconds: 10), () {
-    //   primaryAxis.animateTo(
-    //     Range(min: 1500, max: 2000),
-    //     const Duration(seconds: 5),
-    //     Curves.linear,
-    //   );
-    // });
+    Future.delayed(const Duration(seconds: 9), () {
+      primaryAxis.animateTo(
+        to: Range(min: 1500, max: 2000),
+        duration: const Duration(seconds: 5),
+        curve: Curves.linear,
+      );
+    });
 
     // Future.delayed(const Duration(seconds: 10), () {
     //   primaryAxis.zoomTo(
@@ -192,8 +200,8 @@ class _AppState extends State<App> {
               flex: 5,
               child: Center(
                 child: SizedBox(
-                  height: 500,
-                  width: 1000,
+                  // height: 500,
+                  // width: 1000,
                   child: chart,
                 ),
               ),

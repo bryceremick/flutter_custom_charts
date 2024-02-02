@@ -4,13 +4,16 @@ class Point extends PlottableXYEntity with PointPainter {
   Point({
     required this.primaryAxisValue,
     required this.secondaryAxisValue,
-    this.fill,
-    this.stroke,
+    this.fill = Colors.white,
+    this.stroke = Colors.white,
     this.strokeWidth = 1,
     this.radius = 3,
   }) : super(
           sortableValue: primaryAxisValue,
-        );
+        ) {
+    assert(fill != null || stroke != null,
+        'A point must have either a fill or a stroke');
+  }
 
   final double primaryAxisValue;
   final double secondaryAxisValue;
@@ -23,17 +26,42 @@ class Point extends PlottableXYEntity with PointPainter {
   void paint(
     Canvas canvas, {
     required Offset canvasRelativePoint,
-    Offset? canvasRelativePreviousPoint,
+    Offset? canvasRelativeNextPoint,
+    Color? nextPointFill,
   }) {
-    final paint = Paint()
-      ..color = fill ?? Colors.red
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    // connectPoints = true
+    if (canvasRelativeNextPoint != null) {
+      late final Paint linePaint;
 
-    canvas.drawCircle(canvasRelativePoint, radius, paint);
+      if (stroke == null && nextPointFill == null) {
+        return;
+      } else if (stroke == null && nextPointFill != null) {
+        // if no stroke specified, try to paint a gradient between the two fills
+        linePaint = Paint()
+          ..shader = LinearGradient(
+            colors: [fill!, nextPointFill],
+          ).createShader(
+            Rect.fromPoints(
+              canvasRelativePoint,
+              canvasRelativeNextPoint,
+            ),
+          )
+          ..strokeWidth = strokeWidth;
+      } else {
+        linePaint = Paint()
+          ..color = stroke!
+          ..strokeWidth = strokeWidth;
+      }
 
-    if (canvasRelativePreviousPoint != null) {
-      canvas.drawLine(canvasRelativePreviousPoint, canvasRelativePoint, paint);
+      canvas.drawLine(canvasRelativePoint, canvasRelativeNextPoint, linePaint);
+    }
+
+    if (radius > 0 && fill != null) {
+      final pointPaint = Paint()
+        ..color = fill!
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      canvas.drawCircle(canvasRelativePoint, radius, pointPaint);
     }
   }
 

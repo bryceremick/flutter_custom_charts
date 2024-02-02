@@ -37,7 +37,8 @@ abstract mixin class PointPainter {
   void paint(
     Canvas canvas, {
     required Offset canvasRelativePoint,
-    required Offset? canvasRelativePreviousPoint,
+    Offset? canvasRelativeNextPoint,
+    Color? nextPointFill,
   });
 }
 

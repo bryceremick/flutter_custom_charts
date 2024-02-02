@@ -123,13 +123,15 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
             constraints: super.constraints,
           );
 
-          Offset? translatedPreviousPoint;
+          Offset? translatedNextPoint;
+          Color? nextPointFill;
 
-          if (dataset.shouldConnectLines && index > 0) {
-            final previousPoint = dataset._data[index - 1];
-            translatedPreviousPoint = translatePointToCanvas(
-              primaryAxisValue: previousPoint.primaryAxisValue,
-              secondaryAxisValue: previousPoint.secondaryAxisValue,
+          if (dataset.connectPoints && index < dataset._data.length - 1) {
+            final nextPoint = dataset._data[index + 1];
+            nextPointFill = nextPoint.fill;
+            translatedNextPoint = translatePointToCanvas(
+              primaryAxisValue: nextPoint.primaryAxisValue,
+              secondaryAxisValue: nextPoint.secondaryAxisValue,
               primaryAxisDatasetRange: explicitRange ?? primaryAxisDatasetRange,
               secondaryAxisDatasetRange:
                   secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
@@ -141,7 +143,8 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
           point.paint(
             canvas,
             canvasRelativePoint: translatedPoint,
-            canvasRelativePreviousPoint: translatedPreviousPoint,
+            canvasRelativeNextPoint: translatedNextPoint,
+            nextPointFill: nextPointFill,
           );
           index++;
           if (index >= dataset._data.length) break;
