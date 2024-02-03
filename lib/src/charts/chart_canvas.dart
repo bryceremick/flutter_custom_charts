@@ -29,7 +29,7 @@ class ChartCanvas extends CustomPainter {
     );
 
     // chart padding - should i remove this?
-    _paintPadding(canvas, constraints, padding, Colors.green);
+    _paintPadding(canvas, constraints, padding, fill);
   }
 
   void _paintPadding(

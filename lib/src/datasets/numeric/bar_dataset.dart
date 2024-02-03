@@ -68,10 +68,10 @@ class BarDataset<T extends Bar> with _DatasetMutations<T> {
       max: bars.last.primaryAxisMax,
     );
 
-    _plottableDataset._primaryAxisRange!.min = min(
+    _plottableDataset._primaryAxisRange!.min = math.min(
         _plottableDataset._primaryAxisRange!.min, bars.first.primaryAxisMin);
-    _plottableDataset._primaryAxisRange!.max =
-        max(_plottableDataset._primaryAxisRange!.max, bars.last.primaryAxisMax);
+    _plottableDataset._primaryAxisRange!.max = math.max(
+        _plottableDataset._primaryAxisRange!.max, bars.last.primaryAxisMax);
   }
 
   void __computeSecondaryAxisBounds(List<T> bars) {
@@ -85,9 +85,9 @@ class BarDataset<T extends Bar> with _DatasetMutations<T> {
     );
 
     for (int i = 0; i < bars.length; i++) {
-      _plottableDataset._secondaryAxisRange!.min = min(
+      _plottableDataset._secondaryAxisRange!.min = math.min(
           _plottableDataset._secondaryAxisRange!.min, bars[i].secondaryAxisMin);
-      _plottableDataset._secondaryAxisRange!.max = max(
+      _plottableDataset._secondaryAxisRange!.max = math.max(
           _plottableDataset._secondaryAxisRange!.max, bars[i].secondaryAxisMax);
     }
   }

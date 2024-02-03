@@ -9,6 +9,7 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
   final bool connectPoints;
 
   List<T> get _data => _plottableDataset._data;
+  int get length => _plottableDataset._data.length;
   Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;
   Range? get secondaryAxisRange => _plottableDataset._secondaryAxisRange;
 
@@ -20,9 +21,14 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
   }
 
   @override
-  void addAll(List<T> entities) {
-    _plottableDataset.addAll(entities);
-    __computeDatasetAxisBounds(entities);
+  void addAll(
+    List<T> entities, {
+    double reductionFactor = 1.0,
+  }) {
+    final simplified = simplify(entities, tolerance: reductionFactor);
+    _plottableDataset.addAll(simplified);
+    print(length);
+    __computeDatasetAxisBounds(simplified);
     _plottableDataset._notifyListeners();
   }
 
@@ -73,10 +79,10 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
       max: points.last.primaryAxisValue,
     );
 
-    _plottableDataset._primaryAxisRange!.min = min(
+    _plottableDataset._primaryAxisRange!.min = math.min(
         _plottableDataset._primaryAxisRange!.min,
         points.first.primaryAxisValue);
-    _plottableDataset._primaryAxisRange!.max = max(
+    _plottableDataset._primaryAxisRange!.max = math.max(
         _plottableDataset._primaryAxisRange!.max, points.last.primaryAxisValue);
   }
 
@@ -91,10 +97,10 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
     );
 
     for (int i = 0; i < bars.length; i++) {
-      _plottableDataset._secondaryAxisRange!.min = min(
+      _plottableDataset._secondaryAxisRange!.min = math.min(
           _plottableDataset._secondaryAxisRange!.min,
           bars[i].secondaryAxisValue);
-      _plottableDataset._secondaryAxisRange!.max = max(
+      _plottableDataset._secondaryAxisRange!.max = math.max(
           _plottableDataset._secondaryAxisRange!.max,
           bars[i].secondaryAxisValue);
     }

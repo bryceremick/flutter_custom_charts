@@ -1,6 +1,6 @@
 library flutter_custom_charts;
 
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -30,3 +30,4 @@ part 'src/models/chart_animation.dart';
 part 'src/models/constrained_area.dart';
 part 'src/models/range.dart';
 part 'src/util/helpers.dart';
+part 'src/util//simplify.dart';
