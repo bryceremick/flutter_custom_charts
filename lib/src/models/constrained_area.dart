@@ -40,6 +40,43 @@ class ConstrainedArea {
         yMax: yMax - padding.bottom,
       );
 
+  ConstrainedArea difference(ConstrainedArea other) {
+    double newXMin = this.xMin;
+    double newXMax = this.xMax;
+    double newYMin = this.yMin;
+    double newYMax = this.yMax;
+
+    // Check if the subtraction is horizontal or vertical
+    if (other.yMax < this.yMax) {
+      // If other's top is within this, adjust this bottom to other's top
+      newYMin = other.yMax;
+    } else if (other.yMin > this.yMin) {
+      // If other's bottom is within this, adjust this top to other's bottom
+      newYMax = other.yMin;
+    }
+
+    if (other.xMax < this.xMax) {
+      // If other's right is within this, adjust this left to other's right
+      newXMin = other.xMax;
+    } else if (other.xMin > this.xMin) {
+      // If other's left is within this, adjust this right to other's left
+      newXMax = other.xMin;
+    }
+
+    return ConstrainedArea(
+      xMin: newXMin,
+      xMax: newXMax,
+      yMin: newYMin,
+      yMax: newYMax,
+    );
+  }
+
+  Offset center() {
+    final double centerX = (xMin + xMax) / 2;
+    final double centerY = (yMin + yMax) / 2;
+    return Offset(centerX, centerY);
+  }
+
   @override
   String toString() {
     return 'ConstrainedArea(xMin: $xMin, xMax: $xMax, yMin: $yMin, yMax: $yMax)';

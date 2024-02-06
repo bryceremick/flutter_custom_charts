@@ -184,6 +184,19 @@ abstract class _AxisController extends ChangeNotifier {
   }
 }
 
+class _ChartAxisArea {
+  _ChartAxisArea({
+    required this.position,
+    required this.area,
+  });
+
+  final AxisPosition position;
+  final ConstrainedArea area;
+
+  @override
+  String toString() => '_ChartAxisArea(position: $position, area: $area)';
+}
+
 abstract class PrimaryAxisController extends _AxisController
     with ConstrainedPainter
     implements TickerProvider {
@@ -191,14 +204,40 @@ abstract class PrimaryAxisController extends _AxisController
     required super.position,
     required this.isScrollable,
     this.scrollableRange,
+    this.detailsAboveSize,
+    this.detailsBelowSize,
     super.explicitRange,
     super.onExplicitRangeChange,
   });
 
   final bool isScrollable;
+  final double? detailsAboveSize;
+  final double? detailsBelowSize;
   final Range? scrollableRange;
   ChartAnimation? _zoomAnimation;
+  final List<_ChartAxisArea> _axisAreas = [];
+
   Range? get _implicitPrimaryAxisDataRange => null;
+
+  List<_ChartAxisArea> get _leftAxisAreas => _axisAreas
+      .where((area) => area.position == AxisPosition.left)
+      .toList(growable: false);
+
+  List<_ChartAxisArea> get _rightAxisAreas => _axisAreas
+      .where((area) => area.position == AxisPosition.right)
+      .toList(growable: false);
+
+  List<_ChartAxisArea> get _topAxisAreas => _axisAreas
+      .where(
+        (area) => area.position == AxisPosition.top,
+      )
+      .toList(growable: false);
+
+  List<_ChartAxisArea> get _bottomAxisAreas => _axisAreas
+      .where(
+        (area) => area.position == AxisPosition.bottom,
+      )
+      .toList(growable: false);
 
   _onDragUpdate(
     DragUpdateDetails details, {

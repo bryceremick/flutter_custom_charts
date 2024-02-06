@@ -1,10 +1,12 @@
 import 'package:example/tabs/example_1.dart';
+import 'package:example/tabs/example_2.dart';
 import 'package:example/tabs/gradient_example.dart';
 import 'package:flutter/material.dart';
 
 enum ExampleType {
   exampleGradient,
   exampleChart1,
+  exampleChart2,
 }
 
 class App extends StatefulWidget {
@@ -15,7 +17,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  ExampleType _exampleType = ExampleType.exampleChart1;
+  ExampleType _exampleType = ExampleType.exampleChart2;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -49,6 +51,15 @@ class _AppState extends State<App> {
                 },
               ),
               ListTile(
+                title: Text('Example 2'),
+                onTap: () {
+                  setState(() {
+                    _exampleType = ExampleType.exampleChart2;
+                  });
+                  _scaffoldKey.currentState?.openEndDrawer();
+                },
+              ),
+              ListTile(
                 title: Text('Gradient Example'),
                 onTap: () {
                   setState(() {
@@ -63,6 +74,7 @@ class _AppState extends State<App> {
         body: switch (_exampleType) {
           ExampleType.exampleGradient => const GradientExample(),
           ExampleType.exampleChart1 => const Example1(),
+          ExampleType.exampleChart2 => const Example2(),
         },
       ),
     );

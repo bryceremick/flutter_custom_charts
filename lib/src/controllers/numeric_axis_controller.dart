@@ -9,6 +9,8 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     super.scrollableRange,
     super.explicitRange,
     super.onExplicitRangeChange,
+    super.detailsAboveSize,
+    super.detailsBelowSize,
     this.details,
   }) {
     for (final secondary in secondaryAxisControllers) {
@@ -25,7 +27,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     Canvas canvas, {
     required ConstrainedArea constraints,
   }) {
-    super.constraints = _shrinkConstraints(constraints);
+    super.constraints = _assignConstraints(constraints);
     canvas.save();
     canvas.clipRect(
       Rect.fromLTRB(
@@ -230,9 +232,11 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     }
   }
 
-  ConstrainedArea _shrinkConstraints(ConstrainedArea constraints) {
+  ConstrainedArea _assignConstraints(ConstrainedArea canvasConstraints) {
+    // primary axis
     if (details != null) {
-      constraints = constraints.shrink(
+      ConstrainedArea tmp = canvasConstraints.copyWith();
+      canvasConstraints = canvasConstraints.shrink(
         EdgeInsets.only(
           left: position == AxisPosition.left
               ? details!.crossAlignmentPixelSize
@@ -248,10 +252,19 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
               : 0,
         ),
       );
+      _axisAreas.add(
+        _ChartAxisArea(
+          position: position,
+          area: tmp.difference(canvasConstraints),
+        ),
+      );
     }
+
+    // secondary axes
     for (final secondary in secondaryAxisControllers) {
       if (secondary.details != null) {
-        constraints = constraints.shrink(
+        ConstrainedArea tmp = canvasConstraints.copyWith();
+        canvasConstraints = canvasConstraints.shrink(
           EdgeInsets.only(
             left: secondary.position == AxisPosition.left
                 ? secondary.details!.crossAlignmentPixelSize
@@ -267,10 +280,15 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
                 : 0,
           ),
         );
+        _axisAreas.add(
+          _ChartAxisArea(
+            position: secondary.position,
+            area: tmp.difference(canvasConstraints),
+          ),
+        );
       }
     }
-
-    return constraints;
+    return canvasConstraints;
   }
 
   @override
