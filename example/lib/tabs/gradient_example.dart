@@ -1,9 +1,8 @@
-import 'package:example/tabs/example_1.dart';
+import 'package:example/mock_data.dart';
 import 'package:flutter/material.dart';
 
 class GradientExample extends StatelessWidget {
   const GradientExample({super.key});
-
   @override
   Widget build(BuildContext context) {
     int crossAxisCount = MediaQuery.of(context).size.width ~/ 100;
@@ -17,7 +16,7 @@ class GradientExample extends StatelessWidget {
       itemCount: 200,
       itemBuilder: (context, index) {
         double percentage = index.toDouble();
-        Color color = getColorFromPercentage(percentage);
+        Color color = getGradientZoneColorFromPercentage(percentage);
         return Container(
           decoration: BoxDecoration(
             color: color,

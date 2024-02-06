@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+
 Random random = Random();
 
 class BikeDataPoint {
@@ -111,4 +113,64 @@ List<ZoneSegment> generateZoneSegments({
   }
 
   return segments;
+}
+
+const List<Color> colors = [
+  Color(0xFF5A5A5A), // Zone 1
+  Color(0xFF00B0F0), // Zone 2
+  Color(0xFF00B050), // Zone 3
+  Color(0xFFF6991E), // Zone 4
+  Color(0xFFFF0000), // Zone 5
+  Color(0xFFFF3232), // Zone 6
+  Color(0xFF960096), // Zone 7
+];
+
+const secondaryOpacity = 0.75;
+const List<Color> secondaryZoneColors = [
+  Color.fromRGBO(90, 90, 90, secondaryOpacity), // Zone 1: 0xFF5A5A5A
+  Color.fromRGBO(0, 176, 240, secondaryOpacity), // Zone 2: 0xFF00B0F0
+  Color.fromRGBO(0, 176, 80, secondaryOpacity), // Zone 3: 0xFF00B050
+  Color.fromRGBO(246, 153, 30, secondaryOpacity), // Zone 4: 0xFFF6991E
+  Color.fromRGBO(255, 0, 0, secondaryOpacity), // Zone 5: 0xFFFF0000
+  Color.fromRGBO(255, 50, 50, secondaryOpacity), // Zone 6: 0xFFFF3232
+  Color.fromRGBO(150, 0, 150, secondaryOpacity), // Zone 7: 0xFF960096
+];
+
+const tertiaryOpacity = 0.35;
+const List<Color> tertiaryZoneColors = [
+  Color.fromRGBO(90, 90, 90, tertiaryOpacity), // Zone 1: 0xFF5A5A5A
+  Color.fromRGBO(0, 176, 240, tertiaryOpacity), // Zone 2: 0xFF00B0F0
+  Color.fromRGBO(0, 176, 80, tertiaryOpacity), // Zone 3: 0xFF00B050
+  Color.fromRGBO(246, 153, 30, tertiaryOpacity), // Zone 4: 0xFFF6991E
+  Color.fromRGBO(255, 0, 0, tertiaryOpacity), // Zone 5: 0xFFFF0000
+  Color.fromRGBO(255, 50, 50, tertiaryOpacity), // Zone 6: 0xFFFF3232
+  Color.fromRGBO(150, 0, 150, tertiaryOpacity), // Zone 7: 0xFF960096
+];
+List<double> zoneMaxes = [54, 75, 90, 105, 120, 150, 180];
+
+Color getGradientZoneColorFromPercentage(double percentage) {
+  if (percentage > 150) {
+    return colors.last;
+  }
+
+  int zoneIndex = 0;
+  for (int i = 0; i < zoneMaxes.length; i++) {
+    if (percentage <= zoneMaxes[i]) {
+      zoneIndex = i;
+      break;
+    }
+  }
+
+  double lowerBound = zoneIndex == 0 ? 0 : zoneMaxes[zoneIndex - 1];
+  double upperBound = zoneMaxes[zoneIndex];
+  double zoneSize = upperBound - lowerBound;
+  double fraction = (percentage - lowerBound) / (upperBound - lowerBound);
+
+  double exponent = 1 + (zoneSize / 20);
+  fraction = pow(fraction, exponent).toDouble();
+
+  Color startColor = colors[zoneIndex];
+  Color endColor =
+      zoneIndex < colors.length - 1 ? colors[zoneIndex + 1] : colors[zoneIndex];
+  return Color.lerp(startColor, endColor, fraction)!;
 }

@@ -23,12 +23,16 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
   @override
   void addAll(
     List<T> entities, {
-    double reductionFactor = 1.0,
+    double? reductionFactor = 1.0,
   }) {
-    final simplified = simplify(entities, tolerance: reductionFactor);
-    _plottableDataset.addAll(simplified);
-    print(length);
-    __computeDatasetAxisBounds(simplified);
+    if (reductionFactor != null) {
+      final simplified = simplify(entities, tolerance: reductionFactor);
+      _plottableDataset.addAll(simplified);
+      __computeDatasetAxisBounds(simplified);
+    } else {
+      _plottableDataset.addAll(entities);
+      __computeDatasetAxisBounds(entities);
+    }
     _plottableDataset._notifyListeners();
   }
 
