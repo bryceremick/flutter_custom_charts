@@ -2,39 +2,6 @@ part of flutter_custom_charts;
 
 // TODO - change secondaryAxisMax and secondaryAxisMin to a Range instance
 
-class ChartIcon {
-  ChartIcon({
-    required this.icon,
-    required this.size,
-    required this.color,
-  });
-
-  final IconData icon;
-  final double size;
-  final Color color;
-}
-
-// TODO - use this class for all labels/text throughout the library
-class ChartText {
-  ChartText({
-    required this.text,
-    required this.style,
-  });
-
-  final String text;
-  final TextStyle style;
-}
-
-class BarDetails {
-  BarDetails({
-    this.icon,
-    this.text,
-  });
-
-  final ChartText? text;
-  final ChartIcon? icon;
-}
-
 class Bar extends PlottableXYEntity with ConstrainedPainter {
   Bar({
     required this.primaryAxisMin,
@@ -98,7 +65,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
 
       final center = constraints.center();
       final x = center.dx - (tp.width / 2);
-      final y = constraints.yMin - (tp.height / 2);
+      final y = center.dy - (tp.height / 2);
       tp.paint(canvas, Offset(x, y));
     }
 
@@ -123,9 +90,33 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
 
       final center = constraints.center();
       final x = center.dx - (tp.width / 2);
-      final y = constraints.yMin - (tp.height / 2);
+      final y = center.dy - (tp.height / 2);
       tp.paint(canvas, Offset(x, y));
     }
+  }
+
+  void paintDetailsAbove(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    _paintDetails(
+      canvas,
+      constraints: constraints,
+      details: details,
+    );
+  }
+
+  void paintDetailsBelow(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    _paintDetails(
+      canvas,
+      constraints: constraints,
+      details: details,
+    );
   }
 
   @override
@@ -181,7 +172,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     }
 
     if (detailsAboveConstraints != null && detailsAbove != null) {
-      _paintDetails(
+      paintDetailsAbove(
         canvas,
         constraints: detailsAboveConstraints,
         details: detailsAbove!,
@@ -189,7 +180,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     }
 
     if (detailsBelowConstraints != null && detailsBelow != null) {
-      _paintDetails(
+      paintDetailsBelow(
         canvas,
         constraints: detailsBelowConstraints,
         details: detailsBelow!,

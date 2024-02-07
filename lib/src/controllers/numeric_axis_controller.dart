@@ -9,8 +9,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     super.scrollableRange,
     super.explicitRange,
     super.onExplicitRangeChange,
-    super.detailsAboveSize,
-    super.detailsBelowSize,
+    super.barDetailsSpacing,
     this.details,
   }) {
     for (final secondary in secondaryAxisControllers) {
@@ -28,13 +27,19 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     required ConstrainedArea constraints,
   }) {
     _allocateConstraints(constraints);
+    final clippedArea = determineClippedArea(
+      constraints: super.constraints,
+      position: position,
+      barSpacingAbove: barDetailsSpacing?.spaceAbove,
+      barSpacingBelow: barDetailsSpacing?.spaceBelow,
+    );
     canvas.save();
     canvas.clipRect(
       Rect.fromLTRB(
-        super.constraints.xMin,
-        super.constraints.yMin,
-        super.constraints.xMax,
-        super.constraints.yMax,
+        clippedArea.xMin,
+        clippedArea.yMin,
+        clippedArea.xMax,
+        clippedArea.yMax,
       ),
     );
     _paintChartGrid(canvas);
@@ -101,7 +106,34 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
               secondaryAxisPosition: secondaryAxis.position,
               constraints: super.constraints,
             );
-            bar.paint(canvas, constraints: barConstraints);
+
+            ConstrainedArea? detailsAboveConstraints;
+            ConstrainedArea? detailsBelowConstraints;
+
+            if (barDetailsSpacing != null) {
+              if (barDetailsSpacing!.spaceAbove != null) {
+                detailsAboveConstraints = determineBarDetailsSpacingAbove(
+                  barConstraints: barConstraints,
+                  position: position,
+                  spacing: barDetailsSpacing!.spaceAbove!,
+                );
+              }
+
+              if (barDetailsSpacing!.spaceBelow != null) {
+                detailsBelowConstraints = determineBarDetailsSpacingBelow(
+                  barConstraints: barConstraints,
+                  position: position,
+                  spacing: barDetailsSpacing!.spaceBelow!,
+                );
+              }
+            }
+
+            bar.paint(
+              canvas,
+              constraints: barConstraints,
+              detailsAboveConstraints: detailsAboveConstraints,
+              detailsBelowConstraints: detailsBelowConstraints,
+            );
             index++;
             if (index >= dataset._data.length) break;
           }
@@ -166,19 +198,21 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     }
 
     // primary axis
-    _paintAxisDetails(
-      canvas,
-      constraints: _axisAreas
-          .where((e) => e.position == position && e.axisIndex == 0)
-          .first
-          .area,
-      details: details!,
-      datasetRange: explicitRange ?? _implicitPrimaryAxisDataRange!,
-      isInverted: false,
-    );
-
+    if (details != null) {
+      _paintAxisDetails(
+        canvas,
+        constraints: _axisAreas
+            .where((e) => e.position == position && e.axisIndex == 0)
+            .first
+            .area,
+        details: details!,
+        datasetRange: explicitRange ?? _implicitPrimaryAxisDataRange!,
+        isInverted: false,
+      );
+    }
     // secondary axes
-    secondaryAxisControllers.asMap().forEach((index, secondary) {
+    for (int i = 0; i < secondaryAxisControllers.length; i++) {
+      final secondary = secondaryAxisControllers[i];
       if (secondary.details == null ||
           (secondary.explicitRange == null &&
               secondary._implicitSecondaryAxisDataRange == null)) {
@@ -188,8 +222,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       secondary._paintAxisDetails(
         canvas,
         constraints: _axisAreas
-            .where(
-                (e) => e.position == secondary.position && e.axisIndex == index)
+            .where((e) => e.position == secondary.position && e.axisIndex == i)
             .first
             .area,
         details: secondary.details!,
@@ -197,7 +230,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
             secondary._implicitSecondaryAxisDataRange!,
         isInverted: isSecondaryAxisInverted(position),
       );
-    });
+    }
   }
 
   void _paintChartGrid(Canvas canvas) {
@@ -231,6 +264,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
   }
 
   void _allocateConstraints(ConstrainedArea canvasConstraints) {
+    _axisAreas.clear();
     // primary axis
     if (details != null) {
       ConstrainedArea tmp = canvasConstraints.copyWith();
@@ -259,8 +293,45 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       );
     }
 
+    if (barDetailsSpacing != null && barDetailsSpacing!.spaceAbove != null) {
+      canvasConstraints = canvasConstraints.shrink(
+        EdgeInsets.only(
+          left: position == AxisPosition.right
+              ? barDetailsSpacing!.spaceAbove!
+              : 0,
+          top: position == AxisPosition.bottom
+              ? barDetailsSpacing!.spaceAbove!
+              : 0,
+          right: position == AxisPosition.left
+              ? barDetailsSpacing!.spaceAbove!
+              : 0,
+          bottom:
+              position == AxisPosition.top ? barDetailsSpacing!.spaceAbove! : 0,
+        ),
+      );
+    }
+
+    if (barDetailsSpacing != null && barDetailsSpacing!.spaceBelow != null) {
+      canvasConstraints = canvasConstraints.shrink(
+        EdgeInsets.only(
+          left: position == AxisPosition.left
+              ? barDetailsSpacing!.spaceBelow!
+              : 0,
+          top:
+              position == AxisPosition.top ? barDetailsSpacing!.spaceBelow! : 0,
+          right: position == AxisPosition.right
+              ? barDetailsSpacing!.spaceBelow!
+              : 0,
+          bottom: position == AxisPosition.bottom
+              ? barDetailsSpacing!.spaceBelow!
+              : 0,
+        ),
+      );
+    }
+
     // secondary axes
-    secondaryAxisControllers.asMap().forEach((index, secondary) {
+    for (int i = 0; i < secondaryAxisControllers.length; i++) {
+      final secondary = secondaryAxisControllers[i];
       if (secondary.details != null) {
         ConstrainedArea tmp = canvasConstraints.copyWith();
         canvasConstraints = canvasConstraints.shrink(
@@ -281,13 +352,13 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
         );
         _axisAreas.add(
           _ChartAxisArea(
-            axisIndex: index,
+            axisIndex: i,
             position: secondary.position,
             area: tmp.difference(canvasConstraints),
           ),
         );
       }
-    });
+    }
 
     final primaryAxisAreaIndex = _axisAreas.indexWhere(
       (e) => e.position == position && e.axisIndex == 0,
@@ -302,29 +373,28 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
                       ? _axisAreas
                           .where((e) => e.position == AxisPosition.left)
                           .map((e) => e.area.width)
-                          .reduce((a, b) => a + b)
+                          .fold(0, (a, b) => a + b)
                       : 0,
                   top: direction == AxisDirection.vertical
                       ? _axisAreas
                           .where((e) => e.position == AxisPosition.top)
                           .map((e) => e.area.height)
-                          .reduce((a, b) => a + b)
+                          .fold(0, (a, b) => a + b)
                       : 0,
                   right: direction == AxisDirection.horizontal
                       ? _axisAreas
                           .where((e) => e.position == AxisPosition.right)
                           .map((e) => e.area.width)
-                          .reduce((a, b) => a + b)
+                          .fold(0, (a, b) => a + b)
                       : 0,
                   bottom: direction == AxisDirection.vertical
                       ? _axisAreas
                           .where((e) => e.position == AxisPosition.bottom)
                           .map((e) => e.area.height)
-                          .reduce((a, b) => a + b)
+                          .fold(0, (a, b) => a + b)
                       : 0,
                 ),
               );
-
       _axisAreas[primaryAxisAreaIndex].area = shrunkenPrimaryAxisArea;
     }
     super.constraints = canvasConstraints;

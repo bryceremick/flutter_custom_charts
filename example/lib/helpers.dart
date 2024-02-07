@@ -115,7 +115,7 @@ List<ZoneSegment> generateZoneSegments({
   return segments;
 }
 
-const List<Color> colors = [
+const List<Color> primaryZoneColors = [
   Color(0xFF5A5A5A), // Zone 1
   Color(0xFF00B0F0), // Zone 2
   Color(0xFF00B050), // Zone 3
@@ -150,7 +150,7 @@ List<double> zoneMaxes = [54, 75, 90, 105, 120, 150, 180];
 
 Color getGradientZoneColorFromPercentage(double percentage) {
   if (percentage > 150) {
-    return colors.last;
+    return primaryZoneColors.last;
   }
 
   int zoneIndex = 0;
@@ -169,9 +169,10 @@ Color getGradientZoneColorFromPercentage(double percentage) {
   double exponent = 1 + (zoneSize / 20);
   fraction = pow(fraction, exponent).toDouble();
 
-  Color startColor = colors[zoneIndex];
-  Color endColor =
-      zoneIndex < colors.length - 1 ? colors[zoneIndex + 1] : colors[zoneIndex];
+  Color startColor = primaryZoneColors[zoneIndex];
+  Color endColor = zoneIndex < primaryZoneColors.length - 1
+      ? primaryZoneColors[zoneIndex + 1]
+      : primaryZoneColors[zoneIndex];
   return Color.lerp(startColor, endColor, fraction)!;
 }
 
