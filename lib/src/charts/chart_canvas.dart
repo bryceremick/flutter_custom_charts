@@ -1,5 +1,7 @@
 part of flutter_custom_charts;
 
+final Stopwatch stopwatch = Stopwatch();
+
 class ChartCanvas extends CustomPainter {
   ChartCanvas({
     required this.primaryAxisController,
@@ -12,6 +14,8 @@ class ChartCanvas extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    stopwatch.reset();
+    stopwatch.start();
     final constraints = ConstrainedArea(
       xMin: 0,
       xMax: size.width,
@@ -30,6 +34,8 @@ class ChartCanvas extends CustomPainter {
 
     // chart padding - should i remove this?
     _paintPadding(canvas, constraints, padding, fill);
+    stopwatch.stop();
+    print('Canvas painted in ${stopwatch.elapsedMilliseconds}ms');
   }
 
   void _paintPadding(

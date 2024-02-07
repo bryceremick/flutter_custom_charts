@@ -184,6 +184,22 @@ abstract class _AxisController extends ChangeNotifier {
   }
 }
 
+class _ChartAxisArea {
+  _ChartAxisArea({
+    required this.axisIndex,
+    required this.position,
+    required this.area,
+  });
+
+  final int axisIndex;
+  final AxisPosition position;
+  ConstrainedArea area;
+
+  @override
+  String toString() =>
+      '_ChartAxisArea(axisIndex: $axisIndex, position: $position, area: $area)';
+}
+
 abstract class PrimaryAxisController extends _AxisController
     with ConstrainedPainter
     implements TickerProvider {
@@ -191,13 +207,19 @@ abstract class PrimaryAxisController extends _AxisController
     required super.position,
     required this.isScrollable,
     this.scrollableRange,
+    this.detailsAboveSize,
+    this.detailsBelowSize,
     super.explicitRange,
     super.onExplicitRangeChange,
   });
 
   final bool isScrollable;
+  final double? detailsAboveSize;
+  final double? detailsBelowSize;
   final Range? scrollableRange;
   ChartAnimation? _zoomAnimation;
+  final List<_ChartAxisArea> _axisAreas = [];
+
   Range? get _implicitPrimaryAxisDataRange => null;
 
   _onDragUpdate(

@@ -170,19 +170,6 @@ class _Example1State extends State<Example1> {
       primaryAxisController: primaryAxisTopChart,
       // padding: const EdgeInsets.only(top: 16),
     );
-
-    // Future.delayed(const Duration(seconds: 5), () {
-    //   primaryAxis.animateTo(
-    //       to: Range(
-    //         min: startTime.millisecondsSinceEpoch.toDouble(),
-    //         max: startTime
-    //             .add(const Duration(minutes: 10))
-    //             .millisecondsSinceEpoch
-    //             .toDouble(),
-    //       ),
-    //       duration: const Duration(seconds: 1),
-    //       curve: Curves.linear);
-    // });
   }
 
   late final XYChart chart;

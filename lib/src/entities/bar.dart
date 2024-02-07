@@ -2,6 +2,39 @@ part of flutter_custom_charts;
 
 // TODO - change secondaryAxisMax and secondaryAxisMin to a Range instance
 
+class ChartIcon {
+  ChartIcon({
+    required this.icon,
+    required this.size,
+    required this.color,
+  });
+
+  final IconData icon;
+  final double size;
+  final Color color;
+}
+
+// TODO - use this class for all labels/text throughout the library
+class ChartText {
+  ChartText({
+    required this.text,
+    required this.style,
+  });
+
+  final String text;
+  final TextStyle style;
+}
+
+class BarDetails {
+  BarDetails({
+    this.icon,
+    this.text,
+  });
+
+  final ChartText? text;
+  final ChartIcon? icon;
+}
+
 class Bar extends PlottableXYEntity with ConstrainedPainter {
   Bar({
     required this.primaryAxisMin,
@@ -10,8 +43,9 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     this.secondaryAxisMin = 0,
     this.fill = Colors.blue,
     this.stroke,
-    this.label,
     this.lines = const [],
+    this.detailsAbove,
+    this.detailsBelow,
   }) : super(sortableValue: primaryAxisMin) {
     if (secondaryAxisMin >= secondaryAxisMax) {
       throw XYChartException('Bar yMin must be less than yMax');
@@ -23,10 +57,11 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
 
   final Color? fill;
   final Color? stroke;
-  final Label? label;
   final EdgeInsets padding = const EdgeInsets.all(0);
   final double secondaryAxisMax;
   final double secondaryAxisMin;
+  final BarDetails? detailsAbove;
+  final BarDetails? detailsBelow;
 
   final double primaryAxisMin;
   final double primaryAxisMax;
@@ -46,14 +81,61 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
         max: secondaryAxisMax,
       );
 
+  void _paintDetails(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    if (details.text != null) {
+      final text = details.text!;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: text.text,
+          style: text.style,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: constraints.width);
+
+      final center = constraints.center();
+      final x = center.dx - (tp.width / 2);
+      final y = constraints.yMin - (tp.height / 2);
+      tp.paint(canvas, Offset(x, y));
+    }
+
+    if (details.icon != null) {
+      final icon = details.icon!;
+
+      TextSpan span = TextSpan(
+        style: TextStyle(
+          fontSize: icon.size,
+          fontFamily: icon.icon.fontFamily,
+          package: icon.icon.fontPackage,
+          color: icon.color,
+        ),
+        text: String.fromCharCode(icon.icon.codePoint),
+      );
+
+      TextPainter tp = TextPainter(
+        text: span,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: constraints.width);
+
+      final center = constraints.center();
+      final x = center.dx - (tp.width / 2);
+      final y = constraints.yMin - (tp.height / 2);
+      tp.paint(canvas, Offset(x, y));
+    }
+  }
+
   @override
   void paint(
     Canvas canvas, {
     required ConstrainedArea constraints,
-    // required ConstrainedArea barArea,
+    ConstrainedArea? detailsAboveConstraints,
+    ConstrainedArea? detailsBelowConstraints,
   }) {
     super.constraints = constraints;
-    // super.barArea = barArea;
 
     if (perceivedHeight == 0 ||
         constraints.height == 0 ||
@@ -98,6 +180,22 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
       canvas.drawRect(bar, strokePaint!);
     }
 
+    if (detailsAboveConstraints != null && detailsAbove != null) {
+      _paintDetails(
+        canvas,
+        constraints: detailsAboveConstraints,
+        details: detailsAbove!,
+      );
+    }
+
+    if (detailsBelowConstraints != null && detailsBelow != null) {
+      _paintDetails(
+        canvas,
+        constraints: detailsBelowConstraints,
+        details: detailsBelow!,
+      );
+    }
+
     if (lines.isNotEmpty) {
       for (final line in lines) {
         line.paint(
@@ -110,18 +208,6 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
           ),
         );
       }
-    }
-
-    if (label != null) {
-      label!.paint(
-        canvas,
-        constraints: ConstrainedArea(
-          xMin: l,
-          xMax: r,
-          yMin: t,
-          yMax: b,
-        ),
-      );
     }
   }
 
@@ -139,7 +225,6 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
   int get hashCode {
     return fill.hashCode ^
         stroke.hashCode ^
-        label.hashCode ^
         secondaryAxisMax.hashCode ^
         secondaryAxisMin.hashCode ^
         primaryAxisMax.hashCode ^

@@ -8,6 +8,8 @@ class PrimaryCategoryAxisController<T extends BarDataset,
     super.isScrollable = true,
     super.scrollableRange,
     super.explicitRange,
+    super.detailsAboveSize,
+    super.detailsBelowSize,
   }) {
     for (final secondary in secondaryAxisControllers) {
       verifyAxisPositions(position, secondary.position);
