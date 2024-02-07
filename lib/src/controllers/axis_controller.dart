@@ -186,15 +186,18 @@ abstract class _AxisController extends ChangeNotifier {
 
 class _ChartAxisArea {
   _ChartAxisArea({
+    required this.axisIndex,
     required this.position,
     required this.area,
   });
 
+  final int axisIndex;
   final AxisPosition position;
-  final ConstrainedArea area;
+  ConstrainedArea area;
 
   @override
-  String toString() => '_ChartAxisArea(position: $position, area: $area)';
+  String toString() =>
+      '_ChartAxisArea(axisIndex: $axisIndex, position: $position, area: $area)';
 }
 
 abstract class PrimaryAxisController extends _AxisController
@@ -218,26 +221,6 @@ abstract class PrimaryAxisController extends _AxisController
   final List<_ChartAxisArea> _axisAreas = [];
 
   Range? get _implicitPrimaryAxisDataRange => null;
-
-  List<_ChartAxisArea> get _leftAxisAreas => _axisAreas
-      .where((area) => area.position == AxisPosition.left)
-      .toList(growable: false);
-
-  List<_ChartAxisArea> get _rightAxisAreas => _axisAreas
-      .where((area) => area.position == AxisPosition.right)
-      .toList(growable: false);
-
-  List<_ChartAxisArea> get _topAxisAreas => _axisAreas
-      .where(
-        (area) => area.position == AxisPosition.top,
-      )
-      .toList(growable: false);
-
-  List<_ChartAxisArea> get _bottomAxisAreas => _axisAreas
-      .where(
-        (area) => area.position == AxisPosition.bottom,
-      )
-      .toList(growable: false);
 
   _onDragUpdate(
     DragUpdateDetails details, {

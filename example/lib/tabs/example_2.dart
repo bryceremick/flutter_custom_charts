@@ -79,7 +79,7 @@ class _Example2State extends State<Example2> {
       position: AxisPosition.left,
       details: AxisDetails(
         stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 7,
+        steps: 8,
         gridStyle: const AxisGridStyle(
           color: Colors.grey,
           strokeWidth: 1,
@@ -121,8 +121,10 @@ class _Example2State extends State<Example2> {
         secondaryAxisRight2,
         secondaryAxisLeft3,
       ],
+      position: AxisPosition.bottom,
       isScrollable: false,
       details: AxisDetails(
+        crossAlignmentPixelSize: 64,
         stepLabelFormatter: (value) => '${Duration(
           milliseconds: value.toInt() - startTime.millisecondsSinceEpoch,
         ).inMinutes} min',
