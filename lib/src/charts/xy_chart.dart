@@ -36,11 +36,13 @@ class XYChart extends StatelessWidget {
           }
         },
         child: ClipRect(
-          child: CustomPaint(
-            painter: ChartCanvas(
-              primaryAxisController: primaryAxisController,
-              padding: padding,
-              fill: fill,
+          child: RepaintBoundary(
+            child: CustomPaint(
+              painter: ChartCanvas(
+                primaryAxisController: primaryAxisController,
+                padding: padding,
+                fill: fill,
+              ),
             ),
           ),
         ),

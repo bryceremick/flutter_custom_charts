@@ -98,7 +98,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
 
       final center = constraints.center();
       final x = center.dx - (tp.width / 2);
-      final y = constraints.yMin - (tp.height / 2);
+      final y = center.dy - (tp.height / 2);
       tp.paint(canvas, Offset(x, y));
     }
 
@@ -123,9 +123,33 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
 
       final center = constraints.center();
       final x = center.dx - (tp.width / 2);
-      final y = constraints.yMin - (tp.height / 2);
+      final y = center.dy - (tp.height / 2);
       tp.paint(canvas, Offset(x, y));
     }
+  }
+
+  void paintDetailsAbove(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    _paintDetails(
+      canvas,
+      constraints: constraints,
+      details: details,
+    );
+  }
+
+  void paintDetailsBelow(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    _paintDetails(
+      canvas,
+      constraints: constraints,
+      details: details,
+    );
   }
 
   @override
@@ -181,7 +205,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     }
 
     if (detailsAboveConstraints != null && detailsAbove != null) {
-      _paintDetails(
+      paintDetailsAbove(
         canvas,
         constraints: detailsAboveConstraints,
         details: detailsAbove!,
@@ -189,7 +213,7 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
     }
 
     if (detailsBelowConstraints != null && detailsBelow != null) {
-      _paintDetails(
+      paintDetailsBelow(
         canvas,
         constraints: detailsBelowConstraints,
         details: detailsBelow!,

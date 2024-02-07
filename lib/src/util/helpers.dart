@@ -274,6 +274,94 @@ ConstrainedArea determineAxisDetailsConstraints({
   }
 }
 
+ConstrainedArea determineBarDetailsSpacingAbove({
+  required ConstrainedArea barConstraints,
+  required AxisPosition position,
+  required double spacing,
+}) {
+  switch (position) {
+    case AxisPosition.left:
+      return barConstraints.copyWith(
+        xMin: barConstraints.xMax,
+        xMax: barConstraints.xMax + spacing,
+      );
+    case AxisPosition.right:
+      return barConstraints.copyWith(
+        xMax: barConstraints.xMin,
+        xMin: barConstraints.xMin - spacing,
+      );
+    case AxisPosition.top:
+      return barConstraints.copyWith(
+        yMin: barConstraints.yMax,
+        yMax: barConstraints.yMax + spacing,
+      );
+    case AxisPosition.bottom:
+      return barConstraints.copyWith(
+        yMin: barConstraints.yMin - spacing,
+        yMax: barConstraints.yMin,
+      );
+  }
+}
+
+ConstrainedArea determineBarDetailsSpacingBelow({
+  required ConstrainedArea barConstraints,
+  required AxisPosition position,
+  required double spacing,
+}) {
+  switch (position) {
+    case AxisPosition.left:
+      return barConstraints.copyWith(
+        xMax: barConstraints.xMin,
+        xMin: barConstraints.xMin - spacing,
+      );
+    case AxisPosition.right:
+      return barConstraints.copyWith(
+        xMin: barConstraints.xMax,
+        xMax: barConstraints.xMax + spacing,
+      );
+    case AxisPosition.top:
+      return barConstraints.copyWith(
+        yMin: barConstraints.yMin - spacing,
+        yMax: barConstraints.yMin,
+      );
+    case AxisPosition.bottom:
+      return barConstraints.copyWith(
+        yMin: barConstraints.yMax,
+        yMax: barConstraints.yMax + spacing,
+      );
+  }
+}
+
+ConstrainedArea determineClippedArea({
+  required ConstrainedArea constraints,
+  required AxisPosition position,
+  required double? barSpacingAbove,
+  required double? barSpacingBelow,
+}) {
+  switch (position) {
+    case AxisPosition.left:
+      return constraints.copyWith(
+        xMin: constraints.xMin - (barSpacingBelow ?? 0),
+        xMax: constraints.xMax + (barSpacingAbove ?? 0),
+      );
+    case AxisPosition.right:
+      return constraints.copyWith(
+        xMin: constraints.xMin - (barSpacingAbove ?? 0),
+        xMax: constraints.xMax + (barSpacingBelow ?? 0),
+      );
+    case AxisPosition.top:
+      return constraints.copyWith(
+        yMin: constraints.yMin - (barSpacingBelow ?? 0),
+        yMax: constraints.yMax + (barSpacingAbove ?? 0),
+      );
+    case AxisPosition.bottom:
+      return constraints.copyWith(
+        yMin: constraints.yMin - (barSpacingAbove ?? 0),
+        yMax: constraints.yMax + (barSpacingBelow ?? 0),
+      );
+  }
+}
+
 bool isSecondaryAxisInverted(AxisPosition primary) {
   switch (primary) {
     case AxisPosition.left:

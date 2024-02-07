@@ -33,6 +33,15 @@ class AxisGridStyle {
   final double strokeWidth;
 }
 
+class BarDetailsSpacing {
+  const BarDetailsSpacing({
+    this.spaceAbove,
+    this.spaceBelow,
+  });
+  final double? spaceAbove;
+  final double? spaceBelow;
+}
+
 abstract class _AxisController extends ChangeNotifier {
   _AxisController({
     required this.position,
@@ -207,15 +216,13 @@ abstract class PrimaryAxisController extends _AxisController
     required super.position,
     required this.isScrollable,
     this.scrollableRange,
-    this.detailsAboveSize,
-    this.detailsBelowSize,
+    this.barDetailsSpacing,
     super.explicitRange,
     super.onExplicitRangeChange,
   });
 
   final bool isScrollable;
-  final double? detailsAboveSize;
-  final double? detailsBelowSize;
+  final BarDetailsSpacing? barDetailsSpacing;
   final Range? scrollableRange;
   ChartAnimation? _zoomAnimation;
   final List<_ChartAxisArea> _axisAreas = [];

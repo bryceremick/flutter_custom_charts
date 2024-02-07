@@ -1,6 +1,77 @@
 import 'package:example/helpers.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_custom_charts/flutter_custom_charts.dart';
+
+class _Example2MockSegment {
+  const _Example2MockSegment({
+    required this.zone,
+    required this.xMin,
+    required this.xMax,
+    required this.duration,
+  });
+  final int zone;
+  final double xMin;
+  final double xMax;
+  final Duration duration;
+
+  @override
+  String toString() {
+    return '_Ex2MockSegment(zone: $zone, xMin: $xMin, xMax: $xMax, duration: $duration)';
+  }
+}
+
+class _MyCustomBar extends Bar {
+  _MyCustomBar({
+    required this.detailsBelowCircleFill,
+    required this.detailsBelowCircleStroke,
+    required super.primaryAxisMin,
+    required super.primaryAxisMax,
+    required super.secondaryAxisMax,
+    super.secondaryAxisMin = 0,
+    super.fill = Colors.blue,
+    super.stroke,
+    super.lines = const [],
+    super.detailsAbove,
+    super.detailsBelow,
+  }) : super();
+
+  final Color detailsBelowCircleFill;
+  final Color detailsBelowCircleStroke;
+
+  @override
+  void paintDetailsBelow(
+    Canvas canvas, {
+    required ConstrainedArea constraints,
+    required BarDetails details,
+  }) {
+    if (details.text != null) {
+      final text = details.text!;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: text.text,
+          style: text.style,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: constraints.width);
+
+      final center = constraints.center();
+      final x = center.dx - (tp.width / 2);
+      final y = center.dy - (tp.height / 2);
+
+      final circleFillPaint = Paint()
+        ..color = detailsBelowCircleFill
+        ..style = PaintingStyle.fill;
+      final circleStrokePaint = Paint()
+        ..color = detailsBelowCircleStroke
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1;
+      canvas.drawCircle(center, 20, circleFillPaint);
+      canvas.drawCircle(center, 20, circleStrokePaint);
+      tp.paint(canvas, Offset(x, y));
+    }
+  }
+}
 
 class Example2 extends StatefulWidget {
   const Example2({super.key});
@@ -13,35 +84,46 @@ class _Example2State extends State<Example2> {
   void initState() {
     super.initState();
 
-    final mockBikeDate = generateBikeData(DateTime.now(), durationMinutes: 60);
-    final startTime = mockBikeDate.first.timestamp;
-    final endTime = mockBikeDate.last.timestamp;
-    final mockZoneSegments =
-        generateZoneSegments(start: startTime, end: endTime, numSegments: 20);
+    const zoneSizePrimaryAxis = 100 / 7;
+    const reduced = zoneSizePrimaryAxis * .44;
 
-    final segmentData = BarDataset()
+    final mockZoneSegments = List.generate(
+      7,
+      (index) => _Example2MockSegment(
+        zone: index + 1,
+        xMin: (index * zoneSizePrimaryAxis) + reduced,
+        xMax: (index + 1) * zoneSizePrimaryAxis - reduced,
+        duration: Duration(minutes: random.nextInt(7) + 1),
+      ),
+    );
+
+    final segmentData = BarDataset<_MyCustomBar>()
       ..addAll(
         mockZoneSegments
             .map(
-              (e) => Bar(
-                primaryAxisMin: e.start.millisecondsSinceEpoch.toDouble(),
-                primaryAxisMax: e.end.millisecondsSinceEpoch.toDouble(),
-                secondaryAxisMax: e.zone.toDouble(),
+              (e) => _MyCustomBar(
+                primaryAxisMin: e.xMin,
+                primaryAxisMax: e.xMax,
+                secondaryAxisMax: e.duration.inMilliseconds.toDouble(),
                 fill: secondaryZoneColors[e.zone - 1],
+                detailsBelowCircleFill: tertiaryZoneColors[e.zone - 1],
+                detailsBelowCircleStroke: primaryZoneColors[e.zone - 1],
                 detailsBelow: BarDetails(
                   text: ChartText(
                     text: 'Z${e.zone}',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 1,
+                      fontSize: 16,
                     ),
                   ),
                 ),
                 detailsAbove: BarDetails(
-                  icon: ChartIcon(
-                    icon: Icons.star,
-                    size: 16,
-                    color: Colors.white,
+                  text: ChartText(
+                    text: formatDuration(e.duration),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),
@@ -51,86 +133,25 @@ class _Example2State extends State<Example2> {
 
     final secondaryAxisLeft = SecondaryNumericAxisController(
       barDatasets: [segmentData],
-      position: AxisPosition.left,
-      details: AxisDetails(
-        stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 7,
-        gridStyle: const AxisGridStyle(
-          color: Colors.grey,
-          strokeWidth: 1,
-        ),
-      ),
-    );
-    final secondaryAxisLeft2 = SecondaryNumericAxisController(
-      barDatasets: [segmentData],
-      position: AxisPosition.left,
-      details: AxisDetails(
-        stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 7,
-        gridStyle: const AxisGridStyle(
-          color: Colors.grey,
-          strokeWidth: 1,
-        ),
-      ),
-    );
-
-    final secondaryAxisLeft3 = SecondaryNumericAxisController(
-      barDatasets: [segmentData],
-      position: AxisPosition.left,
-      details: AxisDetails(
-        stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 8,
-        gridStyle: const AxisGridStyle(
-          color: Colors.grey,
-          strokeWidth: 1,
-        ),
-      ),
-    );
-
-    final secondaryAxisRight = SecondaryNumericAxisController(
-      barDatasets: [segmentData],
-      position: AxisPosition.right,
-      details: AxisDetails(
-        stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 7,
-        gridStyle: const AxisGridStyle(
-          color: Colors.grey,
-          strokeWidth: 1,
-        ),
-      ),
-    );
-
-    final secondaryAxisRight2 = SecondaryNumericAxisController(
-      barDatasets: [segmentData],
-      position: AxisPosition.right,
-      details: AxisDetails(
-        stepLabelFormatter: (value) => value.toStringAsFixed(1),
-        steps: 7,
-        gridStyle: const AxisGridStyle(
-          color: Colors.grey,
-          strokeWidth: 1,
-        ),
-      ),
+      position: AxisPosition.bottom,
     );
 
     final primaryAxis = PrimaryNumericAxisController(
-      secondaryAxisControllers: [
-        secondaryAxisLeft,
-        secondaryAxisRight,
-        secondaryAxisLeft2,
-        secondaryAxisRight2,
-        secondaryAxisLeft3,
-      ],
-      position: AxisPosition.bottom,
+      secondaryAxisControllers: [secondaryAxisLeft],
+      position: AxisPosition.left,
       isScrollable: false,
-      details: AxisDetails(
-        crossAlignmentPixelSize: 64,
-        stepLabelFormatter: (value) => formatDuration(Duration(
-          milliseconds: value.toInt() - startTime.millisecondsSinceEpoch,
-        )),
+      barDetailsSpacing: const BarDetailsSpacing(
+        spaceAbove: 92,
+        spaceBelow: 64,
       ),
-      detailsAboveSize: 32,
-      detailsBelowSize: 32,
+      explicitRange: Range(
+        min: 0,
+        max: 100,
+      ),
+      scrollableRange: Range(
+        min: 0,
+        max: 100,
+      ),
     );
 
     chart = XYChart(
@@ -144,7 +165,7 @@ class _Example2State extends State<Example2> {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(0),
+        padding: const EdgeInsets.symmetric(vertical: 160, horizontal: 16),
         child: SizedBox(
           child: chart,
         ),
