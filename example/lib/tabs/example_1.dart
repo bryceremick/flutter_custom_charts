@@ -1,4 +1,4 @@
-import 'package:example/mock_data.dart';
+import 'package:example/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_charts/flutter_custom_charts.dart';
 

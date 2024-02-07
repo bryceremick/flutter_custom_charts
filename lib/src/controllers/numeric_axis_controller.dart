@@ -27,7 +27,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     Canvas canvas, {
     required ConstrainedArea constraints,
   }) {
-    super.constraints = _assignConstraints(constraints);
+    _allocateConstraints(constraints);
     canvas.save();
     canvas.clipRect(
       Rect.fromLTRB(
@@ -230,7 +230,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     }
   }
 
-  ConstrainedArea _assignConstraints(ConstrainedArea canvasConstraints) {
+  void _allocateConstraints(ConstrainedArea canvasConstraints) {
     // primary axis
     if (details != null) {
       ConstrainedArea tmp = canvasConstraints.copyWith();
@@ -327,7 +327,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
 
       _axisAreas[primaryAxisAreaIndex].area = shrunkenPrimaryAxisArea;
     }
-    return canvasConstraints;
+    super.constraints = canvasConstraints;
   }
 
   @override

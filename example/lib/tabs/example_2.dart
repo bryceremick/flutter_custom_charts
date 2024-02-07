@@ -1,4 +1,4 @@
-import 'package:example/mock_data.dart';
+import 'package:example/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_charts/flutter_custom_charts.dart';
 
@@ -125,9 +125,9 @@ class _Example2State extends State<Example2> {
       isScrollable: false,
       details: AxisDetails(
         crossAlignmentPixelSize: 64,
-        stepLabelFormatter: (value) => '${Duration(
+        stepLabelFormatter: (value) => formatDuration(Duration(
           milliseconds: value.toInt() - startTime.millisecondsSinceEpoch,
-        ).inMinutes} min',
+        )),
       ),
       detailsAboveSize: 32,
       detailsBelowSize: 32,
