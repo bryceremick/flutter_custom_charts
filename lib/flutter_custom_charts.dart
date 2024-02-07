@@ -31,3 +31,5 @@ part 'src/models/constrained_area.dart';
 part 'src/models/range.dart';
 part 'src/util/helpers.dart';
 part 'src/util//simplify.dart';
+part 'src/models/bar_details.dart';
+part 'src/models/axis_details.dart';

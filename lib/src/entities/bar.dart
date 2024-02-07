@@ -2,39 +2,6 @@ part of flutter_custom_charts;
 
 // TODO - change secondaryAxisMax and secondaryAxisMin to a Range instance
 
-class ChartIcon {
-  ChartIcon({
-    required this.icon,
-    required this.size,
-    required this.color,
-  });
-
-  final IconData icon;
-  final double size;
-  final Color color;
-}
-
-// TODO - use this class for all labels/text throughout the library
-class ChartText {
-  ChartText({
-    required this.text,
-    required this.style,
-  });
-
-  final String text;
-  final TextStyle style;
-}
-
-class BarDetails {
-  BarDetails({
-    this.icon,
-    this.text,
-  });
-
-  final ChartText? text;
-  final ChartIcon? icon;
-}
-
 class Bar extends PlottableXYEntity with ConstrainedPainter {
   Bar({
     required this.primaryAxisMin,

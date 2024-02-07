@@ -1,45 +1,19 @@
 part of flutter_custom_charts;
 
-class AxisDetails {
-  const AxisDetails({
-    required this.stepLabelFormatter,
-    this.steps = 6,
-    this.crossAlignmentPixelSize = 32,
-    this.name,
-    this.nameLabelStyle = const TextStyle(fontSize: 12, color: Colors.white),
-    this.stepLabelStyle = const TextStyle(fontSize: 12, color: Colors.white),
-    this.gridStyle = const AxisGridStyle(
-      color: Colors.grey,
-      strokeWidth: 1,
-    ),
+class _ChartAxisArea {
+  _ChartAxisArea({
+    required this.axisIndex,
+    required this.position,
+    required this.area,
   });
 
-  final String? name;
-  final TextStyle nameLabelStyle;
-  final TextStyle stepLabelStyle;
-  final String Function(double value) stepLabelFormatter;
-  final double crossAlignmentPixelSize;
-  final int steps;
-  final AxisGridStyle? gridStyle;
-}
+  final int axisIndex;
+  final AxisPosition position;
+  ConstrainedArea area;
 
-class AxisGridStyle {
-  const AxisGridStyle({
-    required this.color,
-    required this.strokeWidth,
-  });
-
-  final Color color;
-  final double strokeWidth;
-}
-
-class BarDetailsSpacing {
-  const BarDetailsSpacing({
-    this.spaceAbove,
-    this.spaceBelow,
-  });
-  final double? spaceAbove;
-  final double? spaceBelow;
+  @override
+  String toString() =>
+      '_ChartAxisArea(axisIndex: $axisIndex, position: $position, area: $area)';
 }
 
 abstract class _AxisController extends ChangeNotifier {
@@ -191,22 +165,6 @@ abstract class _AxisController extends ChangeNotifier {
       );
     }
   }
-}
-
-class _ChartAxisArea {
-  _ChartAxisArea({
-    required this.axisIndex,
-    required this.position,
-    required this.area,
-  });
-
-  final int axisIndex;
-  final AxisPosition position;
-  ConstrainedArea area;
-
-  @override
-  String toString() =>
-      '_ChartAxisArea(axisIndex: $axisIndex, position: $position, area: $area)';
 }
 
 abstract class PrimaryAxisController extends _AxisController
