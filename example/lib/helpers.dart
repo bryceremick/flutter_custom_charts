@@ -125,26 +125,24 @@ const List<Color> primaryZoneColors = [
   Color(0xFF960096), // Zone 7
 ];
 
-const secondaryOpacity = 0.75;
 const List<Color> secondaryZoneColors = [
-  Color.fromRGBO(90, 90, 90, secondaryOpacity), // Zone 1: 0xFF5A5A5A
-  Color.fromRGBO(0, 176, 240, secondaryOpacity), // Zone 2: 0xFF00B0F0
-  Color.fromRGBO(0, 176, 80, secondaryOpacity), // Zone 3: 0xFF00B050
-  Color.fromRGBO(246, 153, 30, secondaryOpacity), // Zone 4: 0xFFF6991E
-  Color.fromRGBO(255, 0, 0, secondaryOpacity), // Zone 5: 0xFFFF0000
-  Color.fromRGBO(255, 50, 50, secondaryOpacity), // Zone 6: 0xFFFF3232
-  Color.fromRGBO(150, 0, 150, secondaryOpacity), // Zone 7: 0xFF960096
+  Color(0xFF393939), // Zone 1
+  Color(0xFF155B75), // Zone 2
+  Color(0xFF155B35), // Zone 3
+  Color(0xFF775221), // Zone 4
+  Color(0xFF7B1515), // Zone 5
+  Color(0xFF7D2B2B), // Zone 6
+  Color(0xFF531753), // Zone 7
 ];
 
-const tertiaryOpacity = 0.35;
 const List<Color> tertiaryZoneColors = [
-  Color.fromRGBO(90, 90, 90, tertiaryOpacity), // Zone 1: 0xFF5A5A5A
-  Color.fromRGBO(0, 176, 240, tertiaryOpacity), // Zone 2: 0xFF00B0F0
-  Color.fromRGBO(0, 176, 80, tertiaryOpacity), // Zone 3: 0xFF00B050
-  Color.fromRGBO(246, 153, 30, tertiaryOpacity), // Zone 4: 0xFFF6991E
-  Color.fromRGBO(255, 0, 0, tertiaryOpacity), // Zone 5: 0xFFFF0000
-  Color.fromRGBO(255, 50, 50, tertiaryOpacity), // Zone 6: 0xFFFF3232
-  Color.fromRGBO(150, 0, 150, tertiaryOpacity), // Zone 7: 0xFF960096
+  Color(0xFF2E2E2E), // Zone 1
+  Color(0xFF1C3F4C), // Zone 2
+  Color(0xFF1C3F2C), // Zone 3
+  Color(0xFF4D3B22), // Zone 4
+  Color(0xFF4F1C1C), // Zone 5
+  Color(0xFF512828), // Zone 6
+  Color(0xFF3C1E3C), // Zone 7
 ];
 List<double> zoneMaxes = [54, 75, 90, 105, 120, 150, 180];
 

@@ -113,6 +113,7 @@ class _Example2State extends State<Example2> {
                     text: 'Z${e.zone}',
                     style: const TextStyle(
                       color: Colors.white,
+                      fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
