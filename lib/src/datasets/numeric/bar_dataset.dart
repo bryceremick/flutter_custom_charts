@@ -52,11 +52,17 @@ class BarDataset<T extends Bar> with _DatasetMutations<T> {
   void clear() => _plottableDataset.clear();
 
   void hide() {
+    if (_isHidden) {
+      return;
+    }
     _isHidden = true;
     _plottableDataset._notifyListeners();
   }
 
   void show() {
+    if (!_isHidden) {
+      return;
+    }
     _isHidden = false;
     _plottableDataset._notifyListeners();
   }
