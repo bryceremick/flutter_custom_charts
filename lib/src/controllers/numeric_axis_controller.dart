@@ -87,6 +87,10 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       // paint bars
       if (secondaryAxis.barDatasets != null) {
         for (final dataset in secondaryAxis.barDatasets!) {
+          if (dataset._isHidden) {
+            continue;
+          }
+
           // binary search for the first bar to paint in viewport
           int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
 
@@ -143,6 +147,10 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       // paint points
       if (secondaryAxis.pointDatasets != null) {
         for (final dataset in secondaryAxis.pointDatasets!) {
+          if (dataset._isHidden) {
+            continue;
+          }
+
           // binary search for the first point to paint in viewport
           int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
 
