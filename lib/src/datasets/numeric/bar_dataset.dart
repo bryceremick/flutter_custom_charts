@@ -2,10 +2,12 @@ part of flutter_custom_charts;
 
 class BarDataset<T extends Bar> with _DatasetMutations<T> {
   final _plottableDataset = _PlottableXYDataset<T>();
+  bool _isHidden = false;
 
   List<T> get _data => _plottableDataset._data;
   Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;
   Range? get secondaryAxisRange => _plottableDataset._secondaryAxisRange;
+  bool get isHidden => _isHidden;
 
   @override
   void add(T entity) {
@@ -48,6 +50,22 @@ class BarDataset<T extends Bar> with _DatasetMutations<T> {
 
   @override
   void clear() => _plottableDataset.clear();
+
+  void hide() {
+    if (_isHidden) {
+      return;
+    }
+    _isHidden = true;
+    _plottableDataset._notifyListeners();
+  }
+
+  void show() {
+    if (!_isHidden) {
+      return;
+    }
+    _isHidden = false;
+    _plottableDataset._notifyListeners();
+  }
 
   @override
   int? _firstIndexWithin(Range range) =>

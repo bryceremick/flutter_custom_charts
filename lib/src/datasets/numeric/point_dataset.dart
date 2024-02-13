@@ -6,12 +6,14 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
   });
 
   final _plottableDataset = _PlottableXYDataset<T>();
+  bool _isHidden = false;
   final bool connectPoints;
 
   List<T> get _data => _plottableDataset._data;
   int get length => _plottableDataset._data.length;
   Range? get primaryAxisRange => _plottableDataset._primaryAxisRange;
   Range? get secondaryAxisRange => _plottableDataset._secondaryAxisRange;
+  bool get isHidden => _isHidden;
 
   @override
   void add(T entity) {
@@ -63,6 +65,22 @@ class PointDataset<T extends Point> with _DatasetMutations<T> {
 
   @override
   void clear() => _plottableDataset.clear();
+
+  void hide() {
+    if (_isHidden) {
+      return;
+    }
+    _isHidden = true;
+    _plottableDataset._notifyListeners();
+  }
+
+  void show() {
+    if (!_isHidden) {
+      return;
+    }
+    _isHidden = false;
+    _plottableDataset._notifyListeners();
+  }
 
   @override
   int? _firstIndexWithin(Range range) =>
