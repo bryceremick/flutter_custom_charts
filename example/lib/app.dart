@@ -19,7 +19,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  ExampleType _exampleType = ExampleType.exampleChart3;
+  ExampleType _exampleType = ExampleType.exampleChart1;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override

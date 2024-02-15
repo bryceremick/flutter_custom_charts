@@ -37,11 +37,28 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
   double get perceivedHeight => (secondaryAxisMax - secondaryAxisMin).abs();
   double get perceivedWidth => (primaryAxisMax - primaryAxisMin).abs();
 
+  Bar clone() => Bar(
+        primaryAxisMin: primaryAxisMin,
+        primaryAxisMax: primaryAxisMax,
+        secondaryAxisMax: secondaryAxisMax,
+        secondaryAxisMin: secondaryAxisMin,
+        fill: fill,
+        stroke: stroke,
+        lines: lines,
+        detailsAbove: detailsAbove,
+        detailsBelow: detailsBelow,
+      );
+
   // bool isOutOfBounds(double x, double y) {
   //   return constraints.isOutOfBoundsX(x) ||
   //       y < barArea.yMin ||
   //       y > barArea.yMax;
   // }
+
+  Range get primaryAxisRange => Range(
+        min: primaryAxisMin,
+        max: primaryAxisMax,
+      );
 
   Range get secondaryAxisRange => Range(
         min: secondaryAxisMin,
@@ -203,12 +220,15 @@ class Bar extends PlottableXYEntity with ConstrainedPainter {
   }
 
   @override
+  String toString() {
+    return 'Bar(primaryAxisRange: ${primaryAxisRange.toString()}, secondaryAxisRange: ${secondaryAxisRange.toString()})';
+  }
+
+  @override
   bool operator ==(covariant Bar other) {
     if (identical(this, other)) return true;
 
-    return other.secondaryAxisMax == secondaryAxisMax &&
-        other.secondaryAxisMin == secondaryAxisMin &&
-        other.primaryAxisMax == primaryAxisMax &&
+    return other.primaryAxisMax == primaryAxisMax &&
         other.primaryAxisMin == primaryAxisMin;
   }
 

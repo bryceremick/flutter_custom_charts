@@ -22,6 +22,15 @@ class Point extends PlottableXYEntity with PointPainter {
   final double strokeWidth;
   final double radius;
 
+  Point clone() => Point(
+        primaryAxisValue: primaryAxisValue,
+        secondaryAxisValue: secondaryAxisValue,
+        fill: fill,
+        stroke: stroke,
+        strokeWidth: strokeWidth,
+        radius: radius,
+      );
+
   @override
   void paint(
     Canvas canvas, {
@@ -66,11 +75,15 @@ class Point extends PlottableXYEntity with PointPainter {
   }
 
   @override
+  String toString() {
+    return 'Point(primaryAxisValue: $primaryAxisValue, secondaryAxisValue: $secondaryAxisValue)';
+  }
+
+  @override
   bool operator ==(covariant Point other) {
     if (identical(this, other)) return true;
 
-    return other.primaryAxisValue == primaryAxisValue &&
-        other.secondaryAxisValue == secondaryAxisValue;
+    return other.primaryAxisValue == primaryAxisValue;
   }
 
   @override

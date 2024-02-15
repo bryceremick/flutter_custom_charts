@@ -17,7 +17,9 @@ class XYChart extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       child: GestureDetector(
+        onTapDown: (details) => primaryAxisController._onTapDown(details),
         onHorizontalDragUpdate: (details) {
+          // TODO - this is not necessary, do this check in the controller
           if (primaryAxisController._implicitPrimaryAxisDataRange != null) {
             primaryAxisController._onDragUpdate(
               details,
@@ -27,6 +29,7 @@ class XYChart extends StatelessWidget {
           }
         },
         onVerticalDragUpdate: (details) {
+          // TODO - this is not necessary, do this check in the controller
           if (primaryAxisController._implicitPrimaryAxisDataRange != null) {
             primaryAxisController._onDragUpdate(
               details,

@@ -33,3 +33,4 @@ part 'src/util/helpers.dart';
 part 'src/util//simplify.dart';
 part 'src/models/bar_details.dart';
 part 'src/models/axis_details.dart';
+part 'src/models/dataset_entity.dart';

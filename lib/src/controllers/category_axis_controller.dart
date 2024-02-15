@@ -1,7 +1,7 @@
 part of flutter_custom_charts;
 
-class PrimaryCategoryAxisController<T extends BarDataset,
-    K extends PointDataset> extends PrimaryAxisController {
+class PrimaryCategoryAxisController<T extends Bar, K extends Point>
+    extends PrimaryAxisController {
   PrimaryCategoryAxisController({
     required this.secondaryAxisControllers,
     super.position = AxisPosition.bottom,
@@ -23,6 +23,11 @@ class PrimaryCategoryAxisController<T extends BarDataset,
   // if axis is scrollable, need to know the pixel per unit ratio
 
   final List<SecondaryNumericAxisController<T, K>> secondaryAxisControllers;
+
+  @override
+  void _onTapDown(TapDownDetails details) {
+    //
+  }
 
   @override
   void paint(
