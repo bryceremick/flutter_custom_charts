@@ -27,7 +27,7 @@ class _Example3State extends State<Example3> {
       ),
     );
 
-    final segmentData = BarDataset<_3DBar>()
+    final segmentData = BarDataset<_3DBar>(id: 'zone_segments')
       ..addAll(
         mockZoneSegments
             .map(

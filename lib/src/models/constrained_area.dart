@@ -33,6 +33,27 @@ class ConstrainedArea {
   bool isOutOfBounds(double x, double y) =>
       isOutOfBoundsX(x) || isOutOfBoundsY(y);
 
+  Range primaryAxisRange(AxisDirection primaryAxisDirection) {
+    if (primaryAxisDirection == AxisDirection.horizontal) {
+      return Range(min: xMin, max: xMax);
+    } else {
+      return Range(min: yMin, max: yMax);
+    }
+  }
+
+  Range secondaryAxisRange(AxisPosition primaryAxisPosition) {
+    switch (primaryAxisPosition) {
+      case AxisPosition.left:
+        return Range(min: xMin, max: xMax);
+      case AxisPosition.right:
+        return Range(min: xMin, max: xMax).inverted();
+      case AxisPosition.top:
+        return Range(min: yMin, max: yMax);
+      case AxisPosition.bottom:
+        return Range(min: yMin, max: yMax).inverted();
+    }
+  }
+
   ConstrainedArea shrink(EdgeInsets padding) => ConstrainedArea(
         xMin: xMin + padding.left,
         xMax: xMax - padding.right,

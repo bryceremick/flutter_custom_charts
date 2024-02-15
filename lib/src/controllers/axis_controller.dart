@@ -186,8 +186,11 @@ abstract class PrimaryAxisController extends _AxisController
   final List<_ChartAxisArea> _axisAreas = [];
 
   Range? get _implicitPrimaryAxisDataRange => null;
+  Range? get _implicitSecondaryAxisDataRange => null;
 
-  _onDragUpdate(
+  void _onTapDown(TapDownDetails details);
+
+  void _onDragUpdate(
     DragUpdateDetails details, {
     required Range implicitDatasetRange,
   }) {
@@ -237,11 +240,11 @@ abstract class PrimaryAxisController extends _AxisController
     explicitRange = newRange;
   }
 
-  _onDragStart(DragStartDetails details) {
+  void _onDragStart(DragStartDetails details) {
     //
   }
 
-  _onDragEnd(DragEndDetails details) {
+  void _onDragEnd(DragEndDetails details) {
     //
   }
 

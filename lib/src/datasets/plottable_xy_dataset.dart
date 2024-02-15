@@ -1,6 +1,7 @@
 part of flutter_custom_charts;
 
 abstract mixin class _DatasetMutations<T extends PlottableXYEntity> {
+  T? get(int index);
   void add(T entity);
   void addAll(List<T> entities);
   void insert(int index, T entity);
@@ -14,6 +15,14 @@ class _PlottableXYDataset<T extends PlottableXYEntity> extends ChangeNotifier
   final List<T> _data = [];
   Range? _primaryAxisRange;
   Range? _secondaryAxisRange;
+
+  @override
+  T? get(int index) {
+    if (index < 0 || index > _data.length - 1) {
+      return null;
+    }
+    return _data[index];
+  }
 
   @override
   void add(T entity) {
@@ -103,6 +112,9 @@ class _PlottableXYDataset<T extends PlottableXYEntity> extends ChangeNotifier
   @override
   int? _firstIndexWithin(Range range) {
     int startIndex = __binarySearch(range.min);
+    // print(range);
+    // print('startIndex: $startIndex');
+    // print('min: ${_data[startIndex].sortableValue}');
 
     if (startIndex < _data.length &&
         _data[startIndex].sortableValue >= range.min &&

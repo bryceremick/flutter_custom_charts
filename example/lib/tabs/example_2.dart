@@ -97,7 +97,7 @@ class _Example2State extends State<Example2> {
       ),
     );
 
-    final segmentData = BarDataset<_MyCustomBar>()
+    final segmentData = BarDataset<_MyCustomBar>(id: 'zone_segments')
       ..addAll(
         mockZoneSegments
             .map(

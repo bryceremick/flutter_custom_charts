@@ -1,6 +1,8 @@
 part of flutter_custom_charts;
 
-class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
+const _onTapGesturePixelSearchTolerance = 20;
+
+class PrimaryNumericAxisController<T extends Bar, K extends Point>
     extends PrimaryAxisController {
   PrimaryNumericAxisController({
     required this.secondaryAxisControllers,
@@ -11,6 +13,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     super.onExplicitRangeChange,
     super.barDetailsSpacing,
     this.details,
+    this.onTap,
   }) {
     for (final secondary in secondaryAxisControllers) {
       verifyAxisPositions(position, secondary.position);
@@ -18,8 +21,13 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     }
   }
 
-  AxisDetails? details;
   final List<SecondaryNumericAxisController<T, K>> secondaryAxisControllers;
+  AxisDetails? details;
+
+  void Function(
+    List<DatasetEntity<T>> bars,
+    List<DatasetEntity<K>> points,
+  )? onTap;
 
   @override
   void paint(
@@ -49,8 +57,7 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
   }
 
   void _paintChartData(Canvas canvas) {
-    final primaryAxisDatasetRange = _implicitPrimaryAxisDataRange;
-    if (primaryAxisDatasetRange == null) {
+    if (_implicitPrimaryAxisDataRange == null) {
       return;
     }
 
@@ -58,7 +65,8 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
         _getMainAlignmentCanvasRange(super.constraints);
 
     if (explicitRange != null &&
-        !explicitRange!.isWithin(scrollableRange ?? primaryAxisDatasetRange)) {
+        !explicitRange!
+            .isWithin(scrollableRange ?? _implicitPrimaryAxisDataRange!)) {
       throw XYChartException(
         'Explicit range must be a subset of the implicit dataset range. Explicit$explicitRange, Implicit${scrollableRange ?? _implicitPrimaryAxisDataRange}',
       );
@@ -68,12 +76,12 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       min: linearTransform(
         primaryAxisCanvasRange.min,
         rangeA: primaryAxisCanvasRange,
-        rangeB: explicitRange ?? primaryAxisDatasetRange,
+        rangeB: explicitRange ?? _implicitPrimaryAxisDataRange!,
       ),
       max: linearTransform(
         primaryAxisCanvasRange.max,
         rangeA: primaryAxisCanvasRange,
-        rangeB: explicitRange ?? primaryAxisDatasetRange,
+        rangeB: explicitRange ?? _implicitPrimaryAxisDataRange!,
       ),
     );
 
@@ -85,116 +93,125 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
       }
 
       // paint bars
-      if (secondaryAxis.barDatasets != null) {
-        for (final dataset in secondaryAxis.barDatasets!) {
-          if (dataset._isHidden) {
-            continue;
-          }
+      for (final dataset in secondaryAxis.barDatasets) {
+        if (dataset._isHidden) {
+          continue;
+        }
 
-          // binary search for the first bar to paint in viewport
-          int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
+        // binary search for the first bar to paint in viewport
+        int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
+        if (index == null) {
+          // print('NULL INDEX');
+          // print('----------------------');
+          continue;
+        }
 
-          // paint bars within chart viewport
-          while (dataset._data[index!].primaryAxisMin <=
-              (primaryAxisDataSetRange.max + 1)) {
-            final bar = dataset._data[index];
-            final barConstraints = translateBarToCanvas(
-              primaryAxisBarRange:
-                  Range(min: bar.primaryAxisMin, max: bar.primaryAxisMax),
-              secondaryAxisBarRange:
-                  Range(min: bar.secondaryAxisMin, max: bar.secondaryAxisMax),
-              primaryAxisDatasetRange: explicitRange ?? primaryAxisDatasetRange,
-              secondaryAxisDatasetRange:
-                  secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
-              primaryAxisPosition: position,
-              secondaryAxisPosition: secondaryAxis.position,
-              constraints: super.constraints,
-            );
+        // print('----------------------');
 
-            ConstrainedArea? detailsAboveConstraints;
-            ConstrainedArea? detailsBelowConstraints;
+        // paint bars within chart viewport
+        while (dataset._data[index!].primaryAxisMin <=
+            (primaryAxisDataSetRange.max + 1)) {
+          final bar = dataset._data[index];
+          final barConstraints = translateBarToCanvas(
+            primaryAxisBarRange:
+                Range(min: bar.primaryAxisMin, max: bar.primaryAxisMax),
+            secondaryAxisBarRange:
+                Range(min: bar.secondaryAxisMin, max: bar.secondaryAxisMax),
+            primaryAxisDatasetRange:
+                explicitRange ?? _implicitPrimaryAxisDataRange!,
+            secondaryAxisDatasetRange:
+                secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
+            primaryAxisPosition: position,
+            secondaryAxisPosition: secondaryAxis.position,
+            constraints: super.constraints,
+          );
 
-            if (barDetailsSpacing != null) {
-              if (barDetailsSpacing!.spaceAbove != null) {
-                detailsAboveConstraints = determineBarDetailsSpacingAbove(
-                  barConstraints: barConstraints,
-                  position: position,
-                  spacing: barDetailsSpacing!.spaceAbove!,
-                );
-              }
+          ConstrainedArea? detailsAboveConstraints;
+          ConstrainedArea? detailsBelowConstraints;
 
-              if (barDetailsSpacing!.spaceBelow != null) {
-                detailsBelowConstraints = determineBarDetailsSpacingBelow(
-                  barConstraints: barConstraints,
-                  position: position,
-                  spacing: barDetailsSpacing!.spaceBelow!,
-                );
-              }
+          if (barDetailsSpacing != null) {
+            if (barDetailsSpacing!.spaceAbove != null) {
+              detailsAboveConstraints = determineBarDetailsSpacingAbove(
+                barConstraints: barConstraints,
+                position: position,
+                spacing: barDetailsSpacing!.spaceAbove!,
+              );
             }
 
-            bar.paint(
-              canvas,
-              constraints: barConstraints,
-              detailsAboveConstraints: detailsAboveConstraints,
-              detailsBelowConstraints: detailsBelowConstraints,
-            );
-            index++;
-            if (index >= dataset._data.length) break;
+            if (barDetailsSpacing!.spaceBelow != null) {
+              detailsBelowConstraints = determineBarDetailsSpacingBelow(
+                barConstraints: barConstraints,
+                position: position,
+                spacing: barDetailsSpacing!.spaceBelow!,
+              );
+            }
           }
+
+          bar.paint(
+            canvas,
+            constraints: barConstraints,
+            detailsAboveConstraints: detailsAboveConstraints,
+            detailsBelowConstraints: detailsBelowConstraints,
+          );
+          index++;
+          if (index >= dataset._data.length) break;
         }
       }
 
       // paint points
-      if (secondaryAxis.pointDatasets != null) {
-        for (final dataset in secondaryAxis.pointDatasets!) {
-          if (dataset._isHidden) {
-            continue;
-          }
+      for (final dataset in secondaryAxis.pointDatasets) {
+        if (dataset._isHidden) {
+          continue;
+        }
 
-          // binary search for the first point to paint in viewport
-          int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
+        // binary search for the first point to paint in viewport
+        int? index = dataset._firstIndexWithin(primaryAxisDataSetRange);
 
-          // paint points within chart viewport
-          while (dataset._data[index!].primaryAxisValue <=
-              (primaryAxisDataSetRange.max + 1)) {
-            final point = dataset._data[index];
-            final translatedPoint = translatePointToCanvas(
-              primaryAxisValue: point.primaryAxisValue,
-              secondaryAxisValue: point.secondaryAxisValue,
-              primaryAxisDatasetRange: explicitRange ?? primaryAxisDatasetRange,
+        if (index == null) {
+          continue;
+        }
+
+        // paint points within chart viewport
+        while (dataset._data[index!].primaryAxisValue <=
+            (primaryAxisDataSetRange.max + 1)) {
+          final point = dataset._data[index];
+          final translatedPoint = translatePointToCanvas(
+            primaryAxisValue: point.primaryAxisValue,
+            secondaryAxisValue: point.secondaryAxisValue,
+            primaryAxisDatasetRange:
+                explicitRange ?? _implicitPrimaryAxisDataRange!,
+            secondaryAxisDatasetRange:
+                secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
+            primaryAxisPosition: position,
+            constraints: super.constraints,
+          );
+
+          Offset? translatedNextPoint;
+          Color? nextPointFill;
+
+          if (dataset.connectPoints && index < dataset._data.length - 1) {
+            final nextPoint = dataset._data[index + 1];
+            nextPointFill = nextPoint.fill;
+            translatedNextPoint = translatePointToCanvas(
+              primaryAxisValue: nextPoint.primaryAxisValue,
+              secondaryAxisValue: nextPoint.secondaryAxisValue,
+              primaryAxisDatasetRange:
+                  explicitRange ?? _implicitPrimaryAxisDataRange!,
               secondaryAxisDatasetRange:
                   secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
               primaryAxisPosition: position,
               constraints: super.constraints,
             );
-
-            Offset? translatedNextPoint;
-            Color? nextPointFill;
-
-            if (dataset.connectPoints && index < dataset._data.length - 1) {
-              final nextPoint = dataset._data[index + 1];
-              nextPointFill = nextPoint.fill;
-              translatedNextPoint = translatePointToCanvas(
-                primaryAxisValue: nextPoint.primaryAxisValue,
-                secondaryAxisValue: nextPoint.secondaryAxisValue,
-                primaryAxisDatasetRange:
-                    explicitRange ?? primaryAxisDatasetRange,
-                secondaryAxisDatasetRange:
-                    secondaryAxis.explicitRange ?? secondaryAxisDatasetRange,
-                primaryAxisPosition: position,
-                constraints: super.constraints,
-              );
-            }
-
-            point.paint(
-              canvas,
-              canvasRelativePoint: translatedPoint,
-              canvasRelativeNextPoint: translatedNextPoint,
-              nextPointFill: nextPointFill,
-            );
-            index++;
-            if (index >= dataset._data.length) break;
           }
+
+          point.paint(
+            canvas,
+            canvasRelativePoint: translatedPoint,
+            canvasRelativeNextPoint: translatedNextPoint,
+            nextPointFill: nextPointFill,
+          );
+          index++;
+          if (index >= dataset._data.length) break;
         }
       }
     }
@@ -218,13 +235,14 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
         isInverted: false,
       );
     }
+
     // secondary axes
     for (int i = 0; i < secondaryAxisControllers.length; i++) {
       final secondary = secondaryAxisControllers[i];
       if (secondary.details == null ||
           (secondary.explicitRange == null &&
               secondary._implicitSecondaryAxisDataRange == null)) {
-        return;
+        continue;
       }
 
       secondary._paintAxisDetails(
@@ -423,11 +441,104 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
     return range;
   }
 
+  @override
+  Range? get _implicitSecondaryAxisDataRange {
+    Range? range;
+    for (final secondaryAxis in secondaryAxisControllers) {
+      final secondaryAxisRange = secondaryAxis._implicitSecondaryAxisDataRange;
+      if (secondaryAxisRange != null) {
+        range ??= secondaryAxisRange;
+        range.min = math.min(range.min, secondaryAxisRange.min);
+        range.max = math.max(range.max, secondaryAxisRange.max);
+      }
+    }
+
+    return range;
+  }
+
+  @override
+  void _onTapDown(TapDownDetails details) {
+    if (onTap == null ||
+        _implicitPrimaryAxisDataRange == null ||
+        _implicitSecondaryAxisDataRange == null) {
+      return;
+    }
+
+    print('HERE1');
+
+    List<DatasetEntity<T>> bars = [];
+    List<DatasetEntity<K>> points = [];
+
+    final primaryAxisCanvasRange =
+        super.constraints.primaryAxisRange(direction);
+    final primaryAxisDatasetRange =
+        explicitRange ?? _implicitPrimaryAxisDataRange!;
+
+    final secondaryAxisCanvasRange =
+        super.constraints.secondaryAxisRange(position);
+    final secondaryAxisDatasetRange = _implicitSecondaryAxisDataRange!;
+
+    final translatedGestureX = linearTransform(
+      details.localPosition.dx,
+      rangeA: primaryAxisCanvasRange,
+      rangeB: primaryAxisDatasetRange,
+    );
+    final translatedGestureY = linearTransform(
+      details.localPosition.dy,
+      rangeA: secondaryAxisCanvasRange,
+      rangeB: secondaryAxisDatasetRange,
+    );
+
+    final translatedGestureXOffsetMin = linearTransform(
+      details.localPosition.dx - _onTapGesturePixelSearchTolerance,
+      rangeA: primaryAxisCanvasRange,
+      rangeB: primaryAxisDatasetRange,
+    );
+
+    final translatedGestureXOffsetMax = linearTransform(
+      details.localPosition.dx + _onTapGesturePixelSearchTolerance,
+      rangeA: primaryAxisCanvasRange,
+      rangeB: primaryAxisDatasetRange,
+    );
+
+    for (final secondaryAxis in secondaryAxisControllers) {
+      for (final dataset in secondaryAxis.barDatasets) {
+        final result = dataset._entitiesContaining(
+          Offset(
+            translatedGestureX,
+            translatedGestureY,
+          ),
+        );
+        if (result.isNotEmpty) {
+          bars.addAll(result);
+        }
+      }
+
+      for (final dataset in secondaryAxis.pointDatasets) {
+        final result = dataset._entitiesWithin(
+          Range(
+            min: translatedGestureXOffsetMin,
+            max: translatedGestureXOffsetMax,
+          ),
+        );
+        if (result.isNotEmpty) {
+          points.addAll(result);
+        }
+      }
+    }
+
+    if (bars.isEmpty && points.isEmpty) {
+      return;
+    }
+
+    onTap!.call(bars, points);
+  }
+
   /// Animates the axis to the desired range. If [to] is null, the axis will animate to the default range
   void animateTo({
     required Range? to,
-    required Duration duration,
-    required Curve curve,
+    Duration duration = const Duration(seconds: 1),
+    Curve curve = Curves.linear,
   }) {
     if (_implicitPrimaryAxisDataRange == null) {
       return;
@@ -489,36 +600,32 @@ class PrimaryNumericAxisController<T extends BarDataset, K extends PointDataset>
   }
 }
 
-class SecondaryNumericAxisController<T extends BarDataset,
-    K extends PointDataset> extends SecondaryAxisController {
+class SecondaryNumericAxisController<T extends Bar, K extends Point>
+    extends SecondaryAxisController {
   SecondaryNumericAxisController({
-    this.barDatasets,
-    this.pointDatasets,
+    this.barDatasets = const [],
+    this.pointDatasets = const [],
     required super.position,
     super.explicitRange,
     this.details,
   }) {
-    if (barDatasets != null) {
-      for (final dataset in barDatasets!) {
-        dataset._plottableDataset.addListener(notifyListeners);
-      }
+    for (final dataset in barDatasets) {
+      dataset._plottableDataset.addListener(notifyListeners);
     }
   }
 
   AxisDetails? details;
-  final List<T>? barDatasets;
-  final List<K>? pointDatasets;
+  final List<BarDataset<T>> barDatasets;
+  final List<PointDataset<K>> pointDatasets;
 
   Range? get __implicitBarPrimaryAxisRange {
     Range? range;
-    if (barDatasets != null) {
-      for (final dataset in barDatasets!) {
-        final primaryAxisRange = dataset.primaryAxisRange;
-        if (primaryAxisRange != null) {
-          range ??= primaryAxisRange;
-          range.min = math.min(range.min, primaryAxisRange.min);
-          range.max = math.max(range.max, primaryAxisRange.max);
-        }
+    for (final dataset in barDatasets) {
+      final primaryAxisRange = dataset.primaryAxisRange;
+      if (primaryAxisRange != null) {
+        range ??= primaryAxisRange;
+        range.min = math.min(range.min, primaryAxisRange.min);
+        range.max = math.max(range.max, primaryAxisRange.max);
       }
     }
     return range;
@@ -526,14 +633,12 @@ class SecondaryNumericAxisController<T extends BarDataset,
 
   Range? get __implicitBarSecondaryAxisRange {
     Range? range;
-    if (barDatasets != null) {
-      for (final dataset in barDatasets!) {
-        final secondaryAxisRange = dataset.secondaryAxisRange;
-        if (secondaryAxisRange != null) {
-          range ??= secondaryAxisRange;
-          range.min = math.min(range.min, secondaryAxisRange.min);
-          range.max = math.max(range.max, secondaryAxisRange.max);
-        }
+    for (final dataset in barDatasets) {
+      final secondaryAxisRange = dataset.secondaryAxisRange;
+      if (secondaryAxisRange != null) {
+        range ??= secondaryAxisRange;
+        range.min = math.min(range.min, secondaryAxisRange.min);
+        range.max = math.max(range.max, secondaryAxisRange.max);
       }
     }
     return range;
@@ -541,14 +646,12 @@ class SecondaryNumericAxisController<T extends BarDataset,
 
   Range? get __implicitPointPrimaryAxisRange {
     Range? range;
-    if (pointDatasets != null) {
-      for (final dataset in pointDatasets!) {
-        final primaryAxisRange = dataset.primaryAxisRange;
-        if (primaryAxisRange != null) {
-          range ??= primaryAxisRange;
-          range.min = math.min(range.min, primaryAxisRange.min);
-          range.max = math.max(range.max, primaryAxisRange.max);
-        }
+    for (final dataset in pointDatasets) {
+      final primaryAxisRange = dataset.primaryAxisRange;
+      if (primaryAxisRange != null) {
+        range ??= primaryAxisRange;
+        range.min = math.min(range.min, primaryAxisRange.min);
+        range.max = math.max(range.max, primaryAxisRange.max);
       }
     }
     return range;
@@ -556,14 +659,12 @@ class SecondaryNumericAxisController<T extends BarDataset,
 
   Range? get __implicitPointSecondaryAxisRange {
     Range? range;
-    if (pointDatasets != null) {
-      for (final dataset in pointDatasets!) {
-        final secondaryAxisRange = dataset.secondaryAxisRange;
-        if (secondaryAxisRange != null) {
-          range ??= secondaryAxisRange;
-          range.min = math.min(range.min, secondaryAxisRange.min);
-          range.max = math.max(range.max, secondaryAxisRange.max);
-        }
+    for (final dataset in pointDatasets) {
+      final secondaryAxisRange = dataset.secondaryAxisRange;
+      if (secondaryAxisRange != null) {
+        range ??= secondaryAxisRange;
+        range.min = math.min(range.min, secondaryAxisRange.min);
+        range.max = math.max(range.max, secondaryAxisRange.max);
       }
     }
     return range;
@@ -608,10 +709,8 @@ class SecondaryNumericAxisController<T extends BarDataset,
   @override
   void dispose() {
     super.dispose();
-    if (barDatasets != null) {
-      for (final dataset in barDatasets!) {
-        dataset._plottableDataset.dispose();
-      }
+    for (final dataset in barDatasets) {
+      dataset._plottableDataset.dispose();
     }
   }
 }

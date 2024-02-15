@@ -35,7 +35,7 @@ class ChartCanvas extends CustomPainter {
     // chart padding - should i remove this?
     _paintPadding(canvas, constraints, padding, fill);
     stopwatch.stop();
-    print('Chart painted in ${stopwatch.elapsedMilliseconds}ms');
+    // print('Chart painted in ${stopwatch.elapsedMilliseconds}ms');
   }
 
   void _paintPadding(

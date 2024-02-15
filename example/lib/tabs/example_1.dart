@@ -19,7 +19,7 @@ class _Example1State extends State<Example1> {
     final mockZoneSegments =
         generateZoneSegments(start: startTime, end: endTime, numSegments: 20);
 
-    final segmentData = BarDataset()
+    final segmentData = BarDataset(id: 'zone_segments')
       ..addAll(
         mockZoneSegments
             .map(
@@ -27,13 +27,13 @@ class _Example1State extends State<Example1> {
                 primaryAxisMin: e.start.millisecondsSinceEpoch.toDouble(),
                 primaryAxisMax: e.end.millisecondsSinceEpoch.toDouble(),
                 secondaryAxisMax: 100,
-                fill: tertiaryZoneColors[e.zone - 1],
+                fill: primaryZoneColors[e.zone - 1].withOpacity(0.25),
               ),
             )
             .toList(),
       );
 
-    final ftpData = PointDataset(connectPoints: true)
+    final ftpData = PointDataset(id: 'ftp', connectPoints: true)
       ..addAll(
         mockBikeDate
             .map(
@@ -49,7 +49,7 @@ class _Example1State extends State<Example1> {
             .toList(),
       );
 
-    final rpmData = PointDataset(connectPoints: true)
+    final rpmData = PointDataset(id: 'rpm', connectPoints: true)
       ..addAll(
         mockBikeDate
             .map(
@@ -79,12 +79,12 @@ class _Example1State extends State<Example1> {
         crossAlignmentPixelSize: 64,
         stepLabelFormatter: (value) => '${value.round()}',
         stepLabelStyle: const TextStyle(
-          fontSize: 18,
+          fontSize: 14,
           color: Colors.white,
         ),
         gridStyle: const AxisGridStyle(
-          color: Color(0xFF000000),
-          strokeWidth: 3,
+          color: Colors.grey,
+          strokeWidth: 1,
         ),
       ),
       explicitRange: Range(min: 0, max: 300),
@@ -110,7 +110,7 @@ class _Example1State extends State<Example1> {
       secondaryAxisControllers: [
         hiddenSecondaryAxis,
         leftSecondaryAxis,
-        rightSecondaryAxis
+        // rightSecondaryAxis
       ],
       position: AxisPosition.bottom,
       explicitRange: Range(
@@ -120,6 +120,19 @@ class _Example1State extends State<Example1> {
             .millisecondsSinceEpoch
             .toDouble(),
       ),
+      // onTap: (bars, points) {
+      //   print('TAPPED');
+      //   // print('BARS:');
+      //   // for (final bar in bars) {
+      //   //   print(bar);
+      //   // }
+
+      //   // print('POINTS:');
+      //   // for (final point in points) {
+      //   //   print(point);
+      //   // }
+      //   // print('-----------------');
+      // },
       details: AxisDetails(
         crossAlignmentPixelSize: 48,
         stepLabelFormatter: (value) => '${Duration(
@@ -142,7 +155,7 @@ class _Example1State extends State<Example1> {
     // TOP CHART
     // -------------------------
 
-    final segmentDataTopChart = BarDataset()
+    final segmentDataTopChart = BarDataset(id: 'zone_segments_top')
       ..addAll(
         mockZoneSegments
             .map(
@@ -162,9 +175,21 @@ class _Example1State extends State<Example1> {
     );
 
     final primaryAxisTopChart = PrimaryNumericAxisController(
-      secondaryAxisControllers: [secondaryAxisTopChart],
-      isScrollable: false,
-    );
+        secondaryAxisControllers: [secondaryAxisTopChart],
+        isScrollable: false,
+        onTap: (bars, points) {
+          if (bars.isEmpty) return;
+          if (bars.first.id == 'zone_segments_top') {
+            final tappedBar = segmentDataTopChart.get(bars.first.index);
+            if (tappedBar == null) return;
+            primaryAxis.animateTo(
+              to: Range(
+                min: tappedBar.primaryAxisMin,
+                max: tappedBar.primaryAxisMax,
+              ),
+            );
+          }
+        });
 
     topChart = XYChart(
       primaryAxisController: primaryAxisTopChart,
