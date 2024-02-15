@@ -464,8 +464,6 @@ class PrimaryNumericAxisController<T extends Bar, K extends Point>
       return;
     }
 
-    print('HERE1');
-
     List<DatasetEntity<T>> bars = [];
     List<DatasetEntity<K>> points = [];
 

@@ -80,7 +80,6 @@ class BarDataset<T extends Bar> with _DatasetMutations<T> {
       _plottableDataset._firstIndexWithin(range);
 
   List<DatasetEntity<T>> _entitiesContaining(Offset position) {
-    print('HERE2');
     int start = 0;
     int end = _data.length - 1;
     int foundIndex = -1;
